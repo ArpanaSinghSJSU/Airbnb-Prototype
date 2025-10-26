@@ -37,11 +37,13 @@ A full-stack Airbnb clone with Node.js/Express backend, React frontend, and Pyth
 - ✅ Booking request management (accept/cancel)
 - ✅ Dashboard with statistics
 
-### AI Concierge Agent (Coming Soon)
-- 🚧 Personalized trip planning
-- 🚧 Activity recommendations
-- 🚧 Restaurant suggestions
-- 🚧 Weather-aware packing checklist
+### AI Concierge Agent ✅
+- ✅ Personalized trip planning with day-by-day itineraries
+- ✅ Activity recommendations filtered by interests and accessibility
+- ✅ Restaurant suggestions with dietary restriction filtering
+- ✅ Weather-aware packing checklist
+- ✅ Natural language query support
+- ✅ Integration with Tavily web search for real-time local data
 
 ---
 
@@ -55,15 +57,19 @@ A full-stack Airbnb clone with Node.js/Express backend, React frontend, and Pyth
 - **File Upload**: Multer
 - **Validation**: Express-validator
 
-### Frontend (Pending)
+### Frontend (Completed)
 - **Framework**: React
-- **Styling**: TailwindCSS / Bootstrap
-- **HTTP Client**: Axios / Fetch API
+- **Styling**: TailwindCSS
+- **Routing**: React Router
+- **HTTP Client**: Axios
+- **State Management**: Context API
 
-### AI Agent (Pending)
+### AI Agent (Completed)
 - **Framework**: Python FastAPI
-- **LLM**: Langchain
+- **LLM**: Langchain + OpenAI GPT
 - **Web Search**: Tavily API
+- **Database**: MySQL (shared with backend)
+- **Weather**: OpenWeather API (optional)
 
 ---
 
@@ -106,14 +112,34 @@ Airbnb-Prototype/
 ├── uploads/                # User uploaded files
 │   ├── profiles/
 │   └── properties/
+├── frontend/               # React frontend application
+│   ├── public/
+│   ├── src/
+│   │   ├── components/     # Reusable components
+│   │   ├── contexts/       # React contexts
+│   │   ├── pages/          # Page components
+│   │   │   ├── traveler/   # Traveler pages
+│   │   │   └── owner/      # Owner pages
+│   │   ├── services/       # API services
+│   │   └── App.js          # Main app component
+│   └── package.json
+├── ai-agent/               # Python AI Concierge Agent
+│   ├── agent.py            # AI agent logic
+│   ├── config.py           # Configuration
+│   ├── database.py         # Database utilities
+│   ├── main.py             # FastAPI application
+│   ├── models.py           # Pydantic models
+│   ├── utils.py            # Helper functions
+│   ├── requirements.txt    # Python dependencies
+│   ├── setup.sh            # Setup script
+│   └── README.md           # AI agent documentation
 ├── .env.example            # Environment variables template
 ├── .gitignore             # Git ignore rules
 ├── init-db.sql            # Database initialization script
-├── package.json           # Dependencies
-├── PROJECT_ANALYSIS.md    # Project analysis
+├── package.json           # Node.js dependencies
 ├── REQUIREMENTS.md        # Project requirements
-├── schema.sql             # Database schema
-└── server.js              # Main application file
+├── swagger.yaml           # API documentation
+└── server.js              # Backend server
 ```
 
 ---
@@ -194,12 +220,22 @@ FRONTEND_URL=http://localhost:3000
 
 ## 🗄 Database Setup
 
-### Initialize DB
+### Method 1: Using Init Script (Recommended)
 
 This method creates the database, tables, and populates sample data:
 
 ```bash
 mysql -u root -p < init-db.sql
+```
+
+Enter your MySQL password when prompted.
+
+### Method 2: Manual Setup
+
+If you prefer to set up manually without sample data:
+
+```bash
+mysql -u root -p < schema.sql
 ```
 
 ### Verify Database Setup
@@ -226,6 +262,12 @@ You should see 4 tables: `users`, `properties`, `bookings`, `favorites`
 ### Development Mode (with auto-restart)
 
 ```bash
+npm run dev
+```
+
+### Production Mode
+
+```bash
 npm start
 ```
 
@@ -247,6 +289,31 @@ You should see:
   "timestamp": "2025-10-24T..."
 }
 ```
+
+### Running the Frontend
+
+In a separate terminal:
+
+```bash
+cd frontend
+npm start
+```
+
+Frontend will open at `http://localhost:3000`
+
+### Running the AI Agent
+
+In a third terminal:
+
+```bash
+cd ai-agent
+source venv/bin/activate  # Activate Python virtual environment
+python main.py
+```
+
+AI Agent will start on `http://localhost:8000`
+
+**📖 See `ai-agent/README.md` for detailed setup instructions**
 
 ---
 

@@ -83,5 +83,21 @@ export const favoritesAPI = {
   remove: (propertyId) => api.delete(`/favorites/${propertyId}`),
 };
 
+// AI Agent APIs (calls Python FastAPI service directly)
+const AI_AGENT_URL = 'http://localhost:8000';
+
+export const aiAgentAPI = {
+  // Generate trip plan from booking ID with extracted preferences
+  // Supports natural language - extracts preferences from user input
+  generatePlan: (bookingId, preferences) =>
+    axios.post(`${AI_AGENT_URL}/api/concierge/plan-from-booking`, {
+      booking_id: bookingId,
+      preferences: preferences || {}
+    }),
+  
+  // Health check
+  healthCheck: () => axios.get(`${AI_AGENT_URL}/health`)
+};
+
 export default api;
 

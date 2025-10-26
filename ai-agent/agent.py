@@ -115,9 +115,27 @@ class AIConciergeAgent:
     def _search_restaurants(self, location: str, preferences: TravelerPreferences) -> List[Dict]:
         """Search for restaurants using Tavily"""
         try:
+            # Extract cuisine preferences from interests
+            cuisine_keywords = [
+                'indian', 'italian', 'chinese', 'japanese', 'thai', 'mexican',
+                'french', 'greek', 'mediterranean', 'american', 'korean', 'vietnamese',
+                'spanish', 'lebanese', 'turkish', 'brazilian', 'caribbean', 'seafood',
+                'steakhouse', 'pizza', 'sushi', 'bbq', 'barbecue'
+            ]
+            
+            cuisine_prefs = [interest for interest in preferences.interests if interest.lower() in cuisine_keywords]
+            
             # Build restaurant search query
+            cuisine_str = " ".join(cuisine_prefs) if cuisine_prefs else ""
             dietary_str = " ".join(preferences.dietary_restrictions) if preferences.dietary_restrictions else ""
-            query = f"best restaurants in {location} {dietary_str}"
+            
+            # Prioritize cuisine preferences, then dietary restrictions
+            if cuisine_str:
+                query = f"best {cuisine_str} restaurants in {location} {dietary_str}"
+            else:
+                query = f"best restaurants in {location} {dietary_str}"
+            
+            print(f"🍽️ Restaurant search query: {query}")
             
             # Search with Tavily
             results = self.tavily_client.search(
@@ -169,6 +187,7 @@ Available Restaurants:
 
 Create a detailed day-by-day itinerary with morning, afternoon, and evening activities.
 Include specific activity names, addresses, estimated durations, and why they match the traveler's preferences.
+IMPORTANT: If cuisine preferences (like Indian, Italian, etc.) are mentioned in interests, prioritize matching restaurants accordingly.
 Format your response as a structured JSON-like output that I can parse."""
 
         try:

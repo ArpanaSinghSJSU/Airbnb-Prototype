@@ -1,18 +1,42 @@
 import React, { useState } from 'react';
+import { aiAgentAPI } from '../../services/api';
 
-const AIAgent = ({ onClose }) => {
+const AIAgent = ({ onClose, bookingId = null, bookings = [], onBookingChange = null }) => {
   const [messages, setMessages] = useState([
     {
       type: 'bot',
-      text: "👋 Hi! I'm your AI Travel Concierge. I can help you plan your trip with personalized recommendations!",
+      text: "👋 Hi! I'm your AI Travel Concierge. I'll create a personalized trip plan based on your booking!",
     },
     {
       type: 'bot',
-      text: 'Try asking me: "Plan a 3-day trip to Miami" or "Recommend family-friendly activities"',
+      text: '💬 Just tell me what you want! Examples:\n• "Plan my trip"\n• "Indian restaurants with kids"\n• "Italian food, vegan options"\n• "Thai cuisine, no long hikes"\n\nI\'ll extract your preferences and generate a complete itinerary! 🎯',
     },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Helper: Render text with clickable links
+  const renderMessageWithLinks = (text) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    
+    return parts.map((part, index) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 underline break-all"
+          >
+            View Details
+          </a>
+        );
+      }
+      return <span key={index}>{part}</span>;
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,51 +49,190 @@ const AIAgent = ({ onClose }) => {
     setMessages((prev) => [...prev, { type: 'user', text: userMessage }]);
     setLoading(true);
 
-    // TODO: Replace with actual AI Agent API call
-    // For now, simulate response
-    setTimeout(() => {
+    try {
       let response = '';
-      
-      if (userMessage.toLowerCase().includes('trip') || userMessage.toLowerCase().includes('plan')) {
-        response = `🗺️ I'd love to help plan your trip! Based on your booking, I can create:
 
-• Day-by-day itinerary (morning/afternoon/evening)
-• Activity recommendations with pricing
-• Restaurant suggestions 
-• Weather-aware packing list
-• Family-friendly options
-
-Note: Full AI Agent integration coming soon with Python FastAPI + Langchain!`;
-      } else if (userMessage.toLowerCase().includes('restaurant')) {
-        response = `🍽️ I can recommend restaurants based on:
-• Your dietary preferences
-• Budget range
-• Cuisine type
-• Distance from your property
-
-Full restaurant recommendations will be available once the AI Agent service is connected!`;
+      if (!bookingId) {
+        response = `❌ I need a booking ID to generate a personalized trip plan. Please access this from your booking page!`;
       } else {
-        response = `I'm here to help! I can assist with:
+        // Always generate trip plan with extracted preferences
+        // Supports natural language - extracts preferences from ANY user input
+        const interests = extractInterests(userMessage);
+        const cuisinePrefs = extractCuisinePreferences(userMessage);
+        
+        const result = await aiAgentAPI.generatePlan(bookingId, {
+          budget: 'medium',
+          interests: [...interests, ...cuisinePrefs], // Merge interests and cuisine preferences
+          dietary_restrictions: extractDietaryRestrictions(userMessage),
+          has_children: userMessage.toLowerCase().includes('kid') || userMessage.toLowerCase().includes('child') || userMessage.toLowerCase().includes('family'),
+          avoid_long_hikes: userMessage.toLowerCase().includes('no hike') || userMessage.toLowerCase().includes('avoid hike')
+        });
 
-🗺️ Trip planning & itineraries
-🎯 Activity recommendations  
-🍽️ Restaurant suggestions
-🎒 Packing lists
-👨‍👩‍👧 Family-friendly options
-
-Ask me about planning your trip, and I'll provide personalized recommendations!`;
+        if (result.data.success) {
+          response = formatItineraryText(result.data);
+        } else {
+          response = `❌ Sorry, I couldn't generate your itinerary. ${result.data.message || 'Please try again later.'}`;
+        }
       }
 
       setMessages((prev) => [...prev, { type: 'bot', text: response }]);
+    } catch (error) {
+      console.error('AI Agent error:', error);
+      let errorMessage = '❌ Sorry, I encountered an error. ';
+      
+      if (error.message?.includes('Network Error') || error.code === 'ECONNREFUSED') {
+        errorMessage += 'The AI Agent service is not running. Please make sure it\'s started on port 8000.';
+      } else {
+        errorMessage += error.response?.data?.error || error.message || 'Please try again later.';
+      }
+      
+      setMessages((prev) => [...prev, { type: 'bot', text: errorMessage }]);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
+  };
+
+  // Helper: Extract interests from user message
+  const extractInterests = (message) => {
+    const interests = [];
+    const interestKeywords = {
+      'beach': ['beach', 'ocean', 'sea', 'coast'],
+      'food': ['food', 'restaurant', 'eat', 'dining', 'cuisine'],
+      'museum': ['museum', 'art', 'gallery', 'culture'],
+      'outdoor': ['outdoor', 'nature', 'park', 'hiking'],
+      'shopping': ['shop', 'shopping', 'mall', 'boutique'],
+      'nightlife': ['night', 'bar', 'club', 'entertainment']
+    };
+
+    Object.entries(interestKeywords).forEach(([interest, keywords]) => {
+      if (keywords.some(kw => message.toLowerCase().includes(kw))) {
+        interests.push(interest);
+      }
+    });
+
+    return interests.length > 0 ? interests : ['general'];
+  };
+
+  // Helper: Extract dietary restrictions
+  const extractDietaryRestrictions = (message) => {
+    const restrictions = [];
+    const dietKeywords = ['vegan', 'vegetarian', 'gluten-free', 'halal', 'kosher', 'dairy-free'];
+    
+    dietKeywords.forEach(diet => {
+      if (message.toLowerCase().includes(diet)) {
+        restrictions.push(diet);
+      }
+    });
+
+    return restrictions;
+  };
+
+  // Helper: Extract cuisine preferences
+  const extractCuisinePreferences = (message) => {
+    const cuisines = [];
+    const cuisineKeywords = [
+      'indian', 'italian', 'chinese', 'japanese', 'thai', 'mexican', 
+      'french', 'greek', 'mediterranean', 'american', 'korean', 'vietnamese',
+      'spanish', 'lebanese', 'turkish', 'brazilian', 'caribbean', 'seafood',
+      'steakhouse', 'pizza', 'sushi', 'bbq', 'barbecue'
+    ];
+    
+    const messageLower = message.toLowerCase();
+    cuisineKeywords.forEach(cuisine => {
+      if (messageLower.includes(cuisine)) {
+        cuisines.push(cuisine);
+      }
+    });
+
+    return cuisines;
+  };
+
+  // Helper: Format itinerary response for display
+  const formatItinerary = (data) => {
+    // Return the raw data for rich rendering instead of plain text
+    return {
+      type: 'itinerary',
+      data: data
+    };
+  };
+
+  // Helper: Format itinerary as plain text (fallback)
+  const formatItineraryText = (data) => {
+    let formatted = '✨ **Your Personalized Trip Plan**\n\n';
+
+    // Add itinerary days
+    if (data.itinerary && data.itinerary.length > 0) {
+      const startDate = data.itinerary[0]?.date;
+      const endDate = data.itinerary[data.itinerary.length - 1]?.date;
+      formatted += `📅 **${data.itinerary.length}-Day Itinerary** (${startDate} to ${endDate})\n\n`;
+      
+      data.itinerary.forEach((day, idx) => {
+        formatted += `**Day ${day.day_number}** (${day.date}):\n\n`;
+        
+        if (day.morning && day.morning.length > 0) {
+          const activity = day.morning[0];
+          formatted += `🌅 **Morning:** ${activity.title}\n`;
+          if (activity.url) formatted += `   ${activity.url}\n`;
+          if (activity.tags && activity.tags.length > 0) formatted += `   🏷️ ${activity.tags.join(', ')}\n`;
+          formatted += '\n';
+        }
+        if (day.afternoon && day.afternoon.length > 0) {
+          const activity = day.afternoon[0];
+          formatted += `☀️ **Afternoon:** ${activity.title}\n`;
+          if (activity.url) formatted += `   ${activity.url}\n`;
+          if (activity.tags && activity.tags.length > 0) formatted += `   🏷️ ${activity.tags.join(', ')}\n`;
+          formatted += '\n';
+        }
+        if (day.evening && day.evening.length > 0) {
+          const activity = day.evening[0];
+          formatted += `🌆 **Evening:** ${activity.title}\n`;
+          if (activity.url) formatted += `   ${activity.url}\n`;
+          if (activity.tags && activity.tags.length > 0) formatted += `   🏷️ ${activity.tags.join(', ')}\n`;
+          formatted += '\n';
+        }
+        if (day.restaurants && day.restaurants.length > 0) {
+          const restaurant = day.restaurants[0];
+          formatted += `🍽️ **Dining:** ${restaurant.name}\n`;
+          if (restaurant.url) formatted += `   ${restaurant.url}\n`;
+          if (restaurant.dietary_options && restaurant.dietary_options.length > 0) {
+            formatted += `   🥗 ${restaurant.dietary_options.join(', ')}\n`;
+          }
+          formatted += '\n';
+        }
+        formatted += '---\n\n';
+      });
+    }
+
+    // Add packing list
+    if (data.packing_list && data.packing_list.length > 0) {
+      formatted += `🎒 **Packing Essentials:**\n`;
+      data.packing_list.slice(0, 5).forEach(item => {
+        formatted += `• ${item.item}\n`;
+      });
+      if (data.packing_list.length > 5) {
+        formatted += `...and ${data.packing_list.length - 5} more items\n`;
+      }
+      formatted += '\n';
+    }
+
+    // Add tips
+    if (data.tips && data.tips.length > 0) {
+      formatted += `💡 **Travel Tips:**\n`;
+      data.tips.forEach(tip => {
+        formatted += `• ${tip}\n`;
+      });
+    }
+
+    formatted += '\n📝 Full details available on your booking page!';
+
+    return formatted;
   };
 
   const suggestedQuestions = [
-    "Plan a 3-day trip",
-    "Family activities",
-    "Vegan restaurants",
-    "What to pack?",
+    "Plan my trip",
+    "Indian restaurants with kids",
+    "Italian food, vegan options",
+    "Family activities, no long hikes",
   ];
 
   return (
@@ -83,19 +246,52 @@ Ask me about planning your trip, and I'll provide personalized recommendations!`
       {/* Agent Panel */}
       <div className="fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-2xl z-50 flex flex-col slide-in">
         {/* Header */}
-        <div className="bg-gradient-to-r from-airbnb-pink to-red-500 text-white p-4 flex justify-between items-center">
-          <div>
-            <h3 className="text-lg font-bold">AI Travel Concierge</h3>
-            <p className="text-xs opacity-90">Powered by AI</p>
+        <div className="bg-gradient-to-r from-airbnb-pink to-red-500 text-white p-4">
+          <div className="flex justify-between items-center mb-3">
+            <div>
+              <h3 className="text-lg font-bold">AI Travel Concierge</h3>
+              <p className="text-xs opacity-90">Powered by AI</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="hover:bg-white hover:bg-opacity-20 p-2 rounded-full transition"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="hover:bg-white hover:bg-opacity-20 p-2 rounded-full transition"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+
+          {/* Booking Selector */}
+          {bookings.length > 1 && onBookingChange && (
+            <div className="mt-2">
+              <label className="text-xs opacity-90 mb-1 block">Select Booking:</label>
+              <select
+                value={bookingId || ''}
+                onChange={(e) => {
+                  onBookingChange(parseInt(e.target.value));
+                  // Clear messages when switching bookings
+                  setMessages([
+                    {
+                      type: 'bot',
+                      text: "👋 Hi! I'm your AI Travel Concierge. I'll create a personalized trip plan based on your booking!",
+                    },
+                    {
+                      type: 'bot',
+                      text: '💬 Just tell me what you want! Examples:\n• "Plan my trip"\n• "Indian restaurants with kids"\n• "Italian food, vegan options"\n• "Thai cuisine, no long hikes"\n\nI\'ll extract your preferences and generate a complete itinerary! 🎯',
+                    },
+                  ]);
+                }}
+                className="w-full bg-white bg-opacity-20 text-white text-sm px-3 py-2 rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
+              >
+                {bookings.map((booking) => (
+                  <option key={booking.id} value={booking.id} className="text-gray-900">
+                    {booking.property_name} ({new Date(booking.start_date).toLocaleDateString()} - {new Date(booking.end_date).toLocaleDateString()})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Messages Container */}
@@ -112,7 +308,9 @@ Ask me about planning your trip, and I'll provide personalized recommendations!`
                     : 'bg-white text-airbnb-dark rounded-bl-none border border-gray-200'
                 }`}
               >
-                <p className="text-sm whitespace-pre-line">{msg.text}</p>
+                <div className="text-sm whitespace-pre-line">
+                  {renderMessageWithLinks(msg.text)}
+                </div>
               </div>
             </div>
           ))}
@@ -170,7 +368,7 @@ Ask me about planning your trip, and I'll provide personalized recommendations!`
             </button>
           </div>
           <p className="text-xs text-airbnb-gray mt-2 text-center">
-            🚧 Full AI integration coming with Python FastAPI + Langchain
+            ✨ Powered by OpenAI GPT + Tavily Search + Langchain
           </p>
         </form>
       </div>

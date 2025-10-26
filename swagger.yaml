@@ -1,0 +1,1009 @@
+openapi: 3.0.0
+info:
+  title: Airbnb Prototype API
+  description: API documentation for the Airbnb Prototype application with Traveler and Owner personas
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@airbnb-prototype.com
+
+servers:
+  - url: http://localhost:5002/api
+    description: Local development server
+
+tags:
+  - name: Authentication
+    description: User authentication endpoints
+  - name: Traveler
+    description: Traveler-specific endpoints
+  - name: Owner
+    description: Owner-specific endpoints
+  - name: Properties
+    description: Property management endpoints
+  - name: Bookings
+    description: Booking management endpoints
+  - name: Favorites
+    description: Favorite properties endpoints
+  - name: Data
+    description: Helper data endpoints
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [traveler, owner]
+        phone:
+          type: string
+        about_me:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+          maxLength: 2
+        country:
+          type: string
+        languages:
+          type: string
+        gender:
+          type: string
+        profile_picture:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Property:
+      type: object
+      properties:
+        id:
+          type: integer
+        owner_id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        price_per_night:
+          type: number
+          format: float
+        bedrooms:
+          type: integer
+        bathrooms:
+          type: integer
+        max_guests:
+          type: integer
+        amenities:
+          type: array
+          items:
+            type: string
+        photos:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+        property_id:
+          type: integer
+        traveler_id:
+          type: integer
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        guests:
+          type: integer
+        status:
+          type: string
+          enum: [PENDING, ACCEPTED, CANCELLED]
+        total_price:
+          type: number
+          format: float
+        property_name:
+          type: string
+        property_location:
+          type: string
+        traveler_name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Favorite:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        property_id:
+          type: integer
+        property_name:
+          type: string
+        property_location:
+          type: string
+        property_price:
+          type: number
+        property_photo:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+
+    Success:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+
+paths:
+  # Authentication Endpoints
+  /auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Create a new user account (traveler or owner)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+                - role
+              properties:
+                name:
+                  type: string
+                  example: John Doe
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 6
+                  example: password123
+                role:
+                  type: string
+                  enum: [traveler, owner]
+                  example: traveler
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      userId:
+                        type: integer
+        '400':
+          description: Validation error or user already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      description: Authenticate user and create session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                password:
+                  type: string
+                  format: password
+                  example: password123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          name:
+                            type: string
+                          email:
+                            type: string
+                          role:
+                            type: string
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout user
+      description: Destroy user session
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /auth/check:
+    get:
+      tags:
+        - Authentication
+      summary: Check authentication status
+      description: Verify if user is authenticated
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: User is authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Traveler Endpoints
+  /traveler/profile:
+    get:
+      tags:
+        - Traveler
+      summary: Get traveler profile
+      description: Retrieve current traveler's profile information
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/User'
+
+    put:
+      tags:
+        - Traveler
+      summary: Update traveler profile
+      description: Update traveler's profile information
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                phone:
+                  type: string
+                about_me:
+                  type: string
+                city:
+                  type: string
+                state:
+                  type: string
+                  maxLength: 2
+                country:
+                  type: string
+                languages:
+                  type: string
+                gender:
+                  type: string
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /traveler/profile/picture:
+    post:
+      tags:
+        - Traveler
+      summary: Upload profile picture
+      description: Upload or update traveler's profile picture
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                profile_picture:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Profile picture uploaded successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      profilePicture:
+                        type: string
+
+  # Owner Endpoints
+  /owner/profile:
+    get:
+      tags:
+        - Owner
+      summary: Get owner profile
+      description: Retrieve current owner's profile information
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/User'
+
+    put:
+      tags:
+        - Owner
+      summary: Update owner profile
+      description: Update owner's profile information
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                phone:
+                  type: string
+                about_me:
+                  type: string
+                city:
+                  type: string
+                state:
+                  type: string
+                country:
+                  type: string
+                languages:
+                  type: string
+                gender:
+                  type: string
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /owner/profile/picture:
+    post:
+      tags:
+        - Owner
+      summary: Upload profile picture
+      description: Upload or update owner's profile picture
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                profile_picture:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Profile picture uploaded successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      profilePicture:
+                        type: string
+
+  # Property Endpoints
+  /properties/search:
+    get:
+      tags:
+        - Properties
+      summary: Search properties
+      description: Search for available properties with optional filters
+      parameters:
+        - name: location
+          in: query
+          schema:
+            type: string
+          description: Filter by location
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Check-in date for availability
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Check-out date for availability
+        - name: guests
+          in: query
+          schema:
+            type: integer
+          description: Minimum number of guests
+      responses:
+        '200':
+          description: Properties retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  properties:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Property'
+                  count:
+                    type: integer
+                  filters:
+                    type: object
+
+  /properties/{id}:
+    get:
+      tags:
+        - Properties
+      summary: Get property by ID
+      description: Retrieve detailed information about a specific property
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Property retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  property:
+                    $ref: '#/components/schemas/Property'
+        '404':
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Properties
+      summary: Update property
+      description: Update property details (owner only)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                description:
+                  type: string
+                location:
+                  type: string
+                price_per_night:
+                  type: number
+                bedrooms:
+                  type: integer
+                bathrooms:
+                  type: integer
+                max_guests:
+                  type: integer
+                amenities:
+                  type: string
+                  description: JSON string of amenities array
+                photos:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Property updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+    delete:
+      tags:
+        - Properties
+      summary: Delete property
+      description: Delete a property (owner only)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Property deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /properties:
+    post:
+      tags:
+        - Properties
+      summary: Create property
+      description: Create a new property listing (owner only)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name
+                - location
+                - price_per_night
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                description:
+                  type: string
+                location:
+                  type: string
+                price_per_night:
+                  type: number
+                bedrooms:
+                  type: integer
+                bathrooms:
+                  type: integer
+                max_guests:
+                  type: integer
+                amenities:
+                  type: string
+                  description: JSON string of amenities array
+                photos:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '201':
+          description: Property created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      propertyId:
+                        type: integer
+
+  /properties/owner/properties:
+    get:
+      tags:
+        - Properties
+      summary: Get owner properties
+      description: Retrieve all properties owned by the current owner
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Properties retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  properties:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Property'
+                  count:
+                    type: integer
+
+  # Booking Endpoints
+  /bookings:
+    post:
+      tags:
+        - Bookings
+      summary: Create booking
+      description: Create a new booking request (traveler only)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - property_id
+                - start_date
+                - end_date
+                - guests
+              properties:
+                property_id:
+                  type: integer
+                start_date:
+                  type: string
+                  format: date
+                end_date:
+                  type: string
+                  format: date
+                guests:
+                  type: integer
+                  minimum: 1
+                total_price:
+                  type: number
+      responses:
+        '201':
+          description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      bookingId:
+                        type: integer
+
+  /bookings/traveler:
+    get:
+      tags:
+        - Bookings
+      summary: Get traveler bookings
+      description: Retrieve all bookings made by the current traveler
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Bookings retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  bookings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Booking'
+
+  /bookings/owner:
+    get:
+      tags:
+        - Bookings
+      summary: Get owner bookings
+      description: Retrieve all bookings for properties owned by the current owner
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Bookings retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  bookings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Booking'
+
+  /bookings/{id}:
+    get:
+      tags:
+        - Bookings
+      summary: Get booking by ID
+      description: Retrieve detailed information about a specific booking
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Booking retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  booking:
+                    $ref: '#/components/schemas/Booking'
+
+  /bookings/{id}/accept:
+    put:
+      tags:
+        - Bookings
+      summary: Accept booking
+      description: Accept a pending booking request (owner only)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Booking accepted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Booking cannot be accepted (not pending or dates unavailable)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /bookings/{id}/cancel:
+    put:
+      tags:
+        - Bookings
+      summary: Cancel booking
+      description: Cancel a booking (owner or traveler)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Booking cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  # Favorites Endpoints
+  /favorites:
+    get:
+      tags:
+        - Favorites
+      summary: Get all favorites
+      description: Retrieve all favorite properties for the current traveler
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Favorites retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  favorites:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Favorite'
+
+    post:
+      tags:
+        - Favorites
+      summary: Add to favorites
+      description: Add a property to favorites (traveler only)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - property_id
+              properties:
+                property_id:
+                  type: integer
+      responses:
+        '201':
+          description: Property added to favorites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /favorites/{propertyId}:
+    delete:
+      tags:
+        - Favorites
+      summary: Remove from favorites
+      description: Remove a property from favorites
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: propertyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Property removed from favorites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  # Data Endpoints
+  /data/countries:
+    get:
+      tags:
+        - Data
+      summary: Get countries list
+      description: Retrieve list of all supported countries
+      responses:
+        '200':
+          description: Countries list retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  countries:
+                    type: array
+                    items:
+                      type: string
+

@@ -2,9 +2,14 @@ const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
 const path = require('path');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
 require('dotenv').config();
 require('./config/db'); // Import database connection
 const app = express();
+
+// Load Swagger documentation
+const swaggerDocument = YAML.load('./swagger.yaml');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -13,6 +18,7 @@ const ownerRoutes = require('./routes/ownerRoutes');
 const propertyRoutes = require('./routes/propertyRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const favoriteRoutes = require('./routes/favoriteRoutes');
+const dataRoutes = require('./routes/dataRoutes');
 
 // Middleware
 app.use(cors({
@@ -38,6 +44,12 @@ app.use(session({
 // Serve static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Swagger API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+  customSiteTitle: 'Airbnb Prototype API Documentation',
+  customCss: '.swagger-ui .topbar { display: none }',
+}));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/traveler', travelerRoutes);
@@ -45,6 +57,7 @@ app.use('/api/owner', ownerRoutes);
 app.use('/api/properties', propertyRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/favorites', favoriteRoutes);
+app.use('/api/data', dataRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -75,6 +88,8 @@ app.use((req, res) => {
 // Start server
 const PORT = process.env.PORT || 5002;
 app.listen(PORT, () => {
-  console.log(` Server running on port ${PORT}`)
-  console.log(` API available at http://localhost:${PORT}/api`);
+  console.log(`\n🚀 Server running on port ${PORT}`);
+  console.log(`📡 API available at http://localhost:${PORT}/api`);
+  console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
+  console.log(`🏥 Health Check: http://localhost:${PORT}/api/health\n`);
 });

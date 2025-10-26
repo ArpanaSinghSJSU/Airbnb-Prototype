@@ -4,52 +4,57 @@ A full-stack Airbnb clone with Node.js/Express backend, React frontend, and Pyth
 
 ## 📋 Table of Contents
 
-- [Features](#features)
+- [Overview](#overview)
 - [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Database Setup](#database-setup)
+- [Installation & Setup](#installation--setup)
 - [Running the Application](#running-the-application)
-- [API Documentation](#api-documentation)
-- [Project Status](#project-status)
-- [Contributing](#contributing)
 
 ---
 
-## ✨ Features
+## Overview
 
-### Traveler Features
-- ✅ User registration and authentication
-- ✅ Profile management with photo upload
-- ✅ Property search (location, dates, guests)
-- ✅ Property details and booking
-- ✅ Booking management (view, cancel)
-- ✅ Favorites system
-- ✅ Booking history
+This is a **Airbnb prototype** consisting of three main components:
 
-### Owner Features
-- ✅ User registration and authentication
-- ✅ Profile management with photo upload
-- ✅ Property posting with photos
-- ✅ Property management (CRUD operations)
-- ✅ Booking request management (accept/cancel)
-- ✅ Dashboard with statistics
+### **1. Backend (Node.js/Express)** 
+- **Port**: `5002`
+- **Purpose**: RESTful API server handling authentication, property management, bookings, and favorites
+- **Database**: MySQL for persistent data storage
+- **Authentication**: Session-based with bcrypt password hashing
+- **Features**: 
+  - User authentication (travelers & owners)
+  - Property CRUD operations with photo uploads
+  - Booking system with date validation and status management
+  - Favorites system
+  - Profile management with photo uploads
 
-### AI Concierge Agent ✅
-- ✅ Personalized trip planning with day-by-day itineraries
-- ✅ Activity recommendations filtered by interests and accessibility
-- ✅ Restaurant suggestions with dietary restriction filtering
-- ✅ Weather-aware packing checklist
-- ✅ Natural language query support
-- ✅ Integration with Tavily web search for real-time local data
+### **2. Frontend (React)** 
+- **Port**: `3000`
+- **Purpose**: User interface for travelers and property owners
+- **Styling**: TailwindCSS for modern, responsive design
+- **Features**:
+  - Separate dashboards for travelers and owners
+  - Property search and booking interface
+  - Interactive AI Travel Concierge (chat interface)
+  - Profile and booking management
+  - Favorites and history tracking
+
+### **3. AI Agent (Python/FastAPI)** 
+- **Port**: `8000`
+- **Purpose**: AI-powered travel concierge for personalized trip planning
+- **LLM**: OpenAI GPT via Langchain
+- **Search**: Tavily API for real-time attraction and restaurant data
+- **Features**:
+  - Day-by-day itinerary generation
+  - Activity recommendations based on interests
+  - Restaurant suggestions with cuisine and dietary preferences
+  - Weather-aware packing lists
+  - Natural language query processing
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
-### Backend (Completed)
+### Backend
 - **Runtime**: Node.js
 - **Framework**: Express.js
 - **Database**: MySQL
@@ -57,143 +62,76 @@ A full-stack Airbnb clone with Node.js/Express backend, React frontend, and Pyth
 - **File Upload**: Multer
 - **Validation**: Express-validator
 
-### Frontend (Completed)
+### Frontend
 - **Framework**: React
 - **Styling**: TailwindCSS
 - **Routing**: React Router
 - **HTTP Client**: Axios
 - **State Management**: Context API
 
-### AI Agent (Completed)
+### AI Agent
 - **Framework**: Python FastAPI
 - **LLM**: Langchain + OpenAI GPT
 - **Web Search**: Tavily API
 - **Database**: MySQL (shared with backend)
-- **Weather**: OpenWeather API (optional)
 
 ---
 
-## 📁 Project Structure
+### **Verify Installation:**
 
-```
-Airbnb-Prototype/
-├── config/                 # Database configuration
-│   └── db.js
-├── controllers/            # Request handlers
-│   ├── authController.js
-│   ├── bookingController.js
-│   ├── dataController.js
-│   ├── favoriteController.js
-│   ├── ownerController.js
-│   ├── propertyController.js
-│   └── travelerController.js
-├── middleware/             # Custom middleware
-│   ├── auth.js
-│   ├── upload.js
-│   └── validation.js
-├── models/                 # Database models
-│   ├── Booking.js
-│   ├── Favorite.js
-│   ├── Owner.js
-│   ├── Property.js
-│   ├── Traveler.js
-│   └── User.js
-├── routes/                 # API routes
-│   ├── authRoutes.js
-│   ├── bookingRoutes.js
-│   ├── dataRoutes.js
-│   ├── favoriteRoutes.js
-│   ├── ownerRoutes.js
-│   ├── propertyRoutes.js
-│   └── travelerRoutes.js
-├── utils/                  # Utility functions
-│   ├── countries.js
-│   └── helpers.js
-├── uploads/                # User uploaded files
-│   ├── profiles/
-│   └── properties/
-├── frontend/               # React frontend application
-│   ├── public/
-│   ├── src/
-│   │   ├── components/     # Reusable components
-│   │   ├── contexts/       # React contexts
-│   │   ├── pages/          # Page components
-│   │   │   ├── traveler/   # Traveler pages
-│   │   │   └── owner/      # Owner pages
-│   │   ├── services/       # API services
-│   │   └── App.js          # Main app component
-│   └── package.json
-├── ai-agent/               # Python AI Concierge Agent
-│   ├── agent.py            # AI agent logic
-│   ├── config.py           # Configuration
-│   ├── database.py         # Database utilities
-│   ├── main.py             # FastAPI application
-│   ├── models.py           # Pydantic models
-│   ├── utils.py            # Helper functions
-│   ├── requirements.txt    # Python dependencies
-│   ├── setup.sh            # Setup script
-│   └── README.md           # AI agent documentation
-├── .env.example            # Environment variables template
-├── .gitignore             # Git ignore rules
-├── init-db.sql            # Database initialization script
-├── package.json           # Node.js dependencies
-├── REQUIREMENTS.md        # Project requirements
-├── swagger.yaml           # API documentation
-└── server.js              # Backend server
+```bash
+# Check Node.js
+node --version 
+
+# Check npm
+npm --version 
+
+# Check MySQL
+mysql --version
+
+# Check Python (for AI agent)
+python --version
+
+# Check MySQL is running
+mysql -u root -p  # Enter root password
 ```
 
 ---
 
-## 📦 Prerequisites
+## Installation & Setup
 
-Before you begin, ensure you have the following installed:
+Follow these steps to set up all three components of the application.
 
-- **Node.js** (v14 or higher)
-- **npm** (v6 or higher)
-- **MySQL** (v5.7 or higher)
-- **Git**
-
----
-
-## 🚀 Installation
-
-### 1. Clone the Repository
+### **Step 1: Clone the Repository**
 
 ```bash
 git clone <repository-url>
 cd Airbnb-Prototype
 ```
 
-### 2. Install Dependencies
+---
+
+### **Step 2: Backend Setup (Node.js/Express)**
+
+#### 2.1 Install Backend Dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Verify Installation
-
+Verify installation:
 ```bash
 npm list --depth=0
 ```
 
-You should see all dependencies from `package.json` installed.
+#### 2.2 Configure Backend Environment
 
----
-
-## ⚙️ Configuration
-
-### 1. Create Environment File
-
-Copy the example environment file and configure it:
-
+Create environment file:
 ```bash
 cp .env.example .env
 ```
 
-### 2. Edit `.env` File
-
-Open `.env` and configure the following variables:
-
+Edit `.env` with your settings:
 ```env
 # Server Configuration
 PORT=5002
@@ -202,361 +140,153 @@ NODE_ENV=development
 # Database Configuration
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=your_mysql_password
+DB_PASSWORD=<your_mysql_password_here>
 DB_NAME=airbnb_db
-
-# Session Configuration (Generate a strong random key)
-SESSION_SECRET=your_very_strong_random_secret_key
 
 # Frontend Configuration
 FRONTEND_URL=http://localhost:3000
 ```
 
-**⚠️ Important:** 
-- Replace `your_mysql_password` with your actual MySQL password
-- Generate a strong random string for `SESSION_SECRET`
+#### 2.3 Setup MySQL Database
 
----
-
-## 🗄 Database Setup
-
-### Method 1: Using Init Script (Recommended)
-
-This method creates the database, tables, and populates sample data:
-
+This creates the database, tables, and sample data:
 ```bash
 mysql -u root -p < init-db.sql
 ```
 
-Enter your MySQL password when prompted.
+**Verify Database:**
+```bash
+mysql -u root -p -e "USE airbnb_db; SHOW TABLES; SELECT COUNT(*) FROM users;"
+```
 
-### Method 2: Manual Setup
+You should see 4 tables and 7 sample users.
 
-If you prefer to set up manually without sample data:
+---
+
+### **Step 3: Frontend Setup (React)**
+
+#### 3.1 Install Frontend Dependencies
 
 ```bash
-mysql -u root -p < schema.sql
+cd frontend
+npm install
+cd ..
 ```
 
-### Verify Database Setup
+**Note:** No additional configuration needed for frontend. It's already configured to connect to backend on port 5002.
+
+---
+
+### **Step 4: AI Agent Setup (Python/FastAPI)**
+
+#### 4.1 Create Python Virtual Environment
+
+**Using conda:**
+```bash
+cd ai-agent
+conda create -n airbnb-ai python=3.9
+conda activate airbnb-ai
+```
+
+#### 4.2 Install Python Dependencies
 
 ```bash
-mysql -u root -p
+pip install -r requirements.txt
 ```
 
-Then run:
+#### 4.3 Configure AI Agent Environment
 
-```sql
-USE airbnb_db;
-SHOW TABLES;
-SELECT COUNT(*) FROM users;
-SELECT COUNT(*) FROM properties;
+Create environment file:
+```bash
+cp env.example .env
 ```
 
-You should see 4 tables: `users`, `properties`, `bookings`, `favorites`
+Edit `ai-agent/.env` with your API keys:
+```env
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Tavily Search API
+TAVILY_API_KEY=your_tavily_api_key_here
+
+# OpenWeather API (Optional)
+OPENWEATHER_API_KEY=your_openweather_key_here  # Optional
+
+# Database Configuration (should match backend)
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_mysql_password_here
+DB_NAME=airbnb_db
+
+# FastAPI Configuration
+HOST=0.0.0.0
+PORT=8000
+```
 
 ---
 
 ## ▶️ Running the Application
 
-### Development Mode (with auto-restart)
+You need to run **all three components** in separate terminal windows/tabs for the full application to work.
 
+### **Quick Start: Run All Components**
+
+Open **3 separate terminals** and run:
+
+#### **Terminal 1: Backend (Node.js)**
 ```bash
-npm run dev
-```
-
-### Production Mode
-
-```bash
+# From project root
 npm start
 ```
+- Backend will start on `http://localhost:5002`
 
-The server will start on `http://localhost:5002`
-
-### Verify Server is Running
-
-Open your browser or use curl:
-
+#### **Terminal 2: Frontend (React)**
 ```bash
-curl http://localhost:5002/api/health
-```
-
-You should see:
-```json
-{
-  "success": true,
-  "message": "Server is running",
-  "timestamp": "2025-10-24T..."
-}
-```
-
-### Running the Frontend
-
-In a separate terminal:
-
-```bash
+# From project root
 cd frontend
 npm start
 ```
+- Frontend will open automatically at `http://localhost:3000`
 
-Frontend will open at `http://localhost:3000`
-
-### Running the AI Agent
-
-In a third terminal:
-
+#### **Terminal 3: AI Agent (Python)**
 ```bash
+# From project root
 cd ai-agent
-source venv/bin/activate  # Activate Python virtual environment
+conda activate airbnb-ai
 python main.py
 ```
-
-AI Agent will start on `http://localhost:8000`
-
-**📖 See `ai-agent/README.md` for detailed setup instructions**
+- AI Agent will start on `http://localhost:8000`
 
 ---
 
-## 📚 API Documentation
+### **API Documentations**
 
-### Interactive Swagger UI Documentation
+#### **1. Backend API documentation (Swagger)**
+Open browser: http://localhost:5002/api-docs
 
-**🎉 View complete API documentation with interactive testing:**
+#### **2. AI Agent API documentation (Swagger)**
+Open browser: http://localhost:8000/docs
 
-```
-http://localhost:5002/api-docs
-```
 
-The Swagger UI provides:
-- ✅ Complete API reference for all 32 endpoints
-- ✅ Request/response schemas
-- ✅ Interactive "Try it out" feature
-- ✅ Authentication requirements
-- ✅ Example requests and responses
+### **Access the Application**
 
-### Base URL
+Once all three components are running:
 
-```
-http://localhost:5002/api
-```
-
-### Authentication Endpoints
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/auth/signup` | Register new user | No |
-| POST | `/auth/login` | Login user | No |
-| POST | `/auth/logout` | Logout user | Yes |
-| GET | `/auth/check` | Check auth status | Yes |
-
-### Traveler Endpoints
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/traveler/profile` | Get traveler profile | Yes (Traveler) |
-| PUT | `/traveler/profile` | Update profile | Yes (Traveler) |
-| POST | `/traveler/profile/picture` | Upload profile pic | Yes (Traveler) |
-| GET | `/traveler/history` | Get booking history | Yes (Traveler) |
-
-### Owner Endpoints
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/owner/profile` | Get owner profile | Yes (Owner) |
-| PUT | `/owner/profile` | Update profile | Yes (Owner) |
-| POST | `/owner/profile/picture` | Upload profile pic | Yes (Owner) |
-| GET | `/owner/dashboard` | Get dashboard stats | Yes (Owner) |
-
-### Property Endpoints
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/properties/search` | Search properties | No |
-| GET | `/properties/:id` | Get property details | No |
-| POST | `/properties` | Create property | Yes (Owner) |
-| PUT | `/properties/:id` | Update property | Yes (Owner) |
-| DELETE | `/properties/:id` | Delete property | Yes (Owner) |
-| POST | `/properties/:id/photos` | Upload photos | Yes (Owner) |
-
-### Booking Endpoints
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/bookings` | Create booking | Yes (Traveler) |
-| GET | `/bookings/traveler` | Get traveler bookings | Yes (Traveler) |
-| GET | `/bookings/owner` | Get owner bookings | Yes (Owner) |
-| PUT | `/bookings/:id/accept` | Accept booking | Yes (Owner) |
-| PUT | `/bookings/:id/cancel` | Cancel booking | Yes |
-| GET | `/bookings/:id` | Get booking details | Yes |
-
-### Favorites Endpoints
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/favorites` | Add to favorites | Yes (Traveler) |
-| GET | `/favorites` | Get favorites | Yes (Traveler) |
-| DELETE | `/favorites/:propertyId` | Remove from favorites | Yes (Traveler) |
-
-### Data Endpoints
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/data/countries` | Get countries list | No |
-| GET | `/data/states?country=USA` | Get states by country | No |
+1. **Open Frontend**: http://localhost:3000
+2. **Login as Traveler**: Use test account `john.traveler@example.com`
+3. **Go to "My Bookings"**: You'll see accepted bookings
+4. **Click AI Button**: Bottom-right corner
+5. **Ask AI**: "Plan trip with Mexican restaurants and kids"
+6. **Get Itinerary**: AI generates personalized day-by-day plan
 
 ---
 
-## 🔍 Testing the API
+### **Stopping the Application**
 
-### Using curl
+To stop each component:
+- Press `Ctrl + C` in each terminal
 
-**Sign up:**
+To deactivate Python conda environment:
 ```bash
-curl -X POST http://localhost:5002/api/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Test User",
-    "email": "test@example.com",
-    "password": "password123",
-    "role": "traveler"
-  }'
+conda deactivate 
 ```
-
-**Login:**
-```bash
-curl -X POST http://localhost:5002/api/auth/login \
-  -H "Content-Type: application/json" \
-  -c cookies.txt \
-  -d '{
-    "email": "test@example.com",
-    "password": "password123"
-  }'
-```
-
-**Get Properties:**
-```bash
-curl -X GET "http://localhost:5002/api/properties/search?location=Miami" \
-  -b cookies.txt
-```
-
-### Using Postman
-
-1. Import the API endpoints
-2. Set base URL: `http://localhost:5002/api`
-3. Enable cookies for session management
-4. Test each endpoint
-
----
-
-## 📊 Project Status
-
-### Completed ✅
-- ✅ Backend API (85% complete)
-- ✅ Database schema and models
-- ✅ Authentication & authorization
-- ✅ Property management
-- ✅ Booking system with date blocking
-- ✅ Favorites system
-- ✅ File upload system
-- ✅ Validation & error handling
-
-### In Progress 🚧
-- 🚧 Frontend React application
-- 🚧 AI Concierge Agent (Python FastAPI)
-
-### Pending 📝
-- 📝 Unit tests
-- 📝 Integration tests
-- 📝 API rate limiting
-- 📝 Production deployment setup
-
----
-
-## 🐛 Troubleshooting
-
-### MySQL Connection Error
-
-**Error:** `Error connecting to database: ER_ACCESS_DENIED_ERROR`
-
-**Solution:**
-1. Verify MySQL credentials in `.env`
-2. Ensure MySQL server is running: `mysql.server status`
-3. Test connection: `mysql -u root -p`
-
-### Port Already in Use
-
-**Error:** `Port 5002 is already in use`
-
-**Solution:**
-1. Change PORT in `.env` to different value (e.g., 5003)
-2. Or kill the process using port 5002:
-```bash
-lsof -ti:5002 | xargs kill -9
-```
-
-### Session Not Persisting
-
-**Solution:**
-- Ensure SESSION_SECRET is set in `.env`
-- Check that cookies are enabled in your client
-- Verify CORS credentials are set to true
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the ISC License.
-
----
-
-## 👥 Authors
-
-- Backend Development: ✅ Complete
-- Frontend Development: 🚧 In Progress
-- AI Agent Development: 📝 Pending
-
----
-
-## 📞 Support
-
-For issues or questions:
-1. Check the [Troubleshooting](#troubleshooting) section
-2. Review the [API Documentation](#api-documentation)
-3. Check `PROJECT_ANALYSIS.md` for detailed implementation status
-
----
-
-## 🎯 Next Steps
-
-1. **For Development:**
-   - Set up React frontend
-   - Build UI components
-   - Integrate with backend APIs
-   - Implement AI Agent service
-
-2. **For Testing:**
-   - Use Postman to test all API endpoints
-   - Test user registration and login flow
-   - Test property creation and booking flow
-   - Test favorites functionality
-
-3. **For Deployment:**
-   - Set up production database
-   - Configure environment variables
-   - Set up HTTPS
-   - Deploy backend to cloud service
-   - Deploy frontend separately
-
----
-
-**Happy Coding! 🚀**

@@ -108,27 +108,43 @@ const Favorites = () => {
 
                 <Link to={`/traveler/property/${favorite.property_id}`}>
                   <div className="relative h-64 bg-gray-200 rounded-t-xl overflow-hidden">
-                    {favorite.property_photo ? (
-                      <img
-                        src={`http://localhost:5002${favorite.property_photo}`}
-                        alt={favorite.property_name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-6xl">🏠</div>
-                    )}
+                    {(() => {
+                      // Parse photos if it's a string, or use as is if already an array
+                      let photos = favorite.photos;
+                      if (typeof photos === 'string') {
+                        try {
+                          photos = JSON.parse(photos);
+                        } catch (e) {
+                          photos = [];
+                        }
+                      }
+                      return photos && photos.length > 0 ? (
+                        <img
+                          src={`http://localhost:5002${photos[0]}`}
+                          alt={favorite.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                          onError={(e) => {
+                            e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-6xl">🏠</div>';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-6xl">
+                          🏠
+                        </div>
+                      );
+                    })()}
                     <div className="absolute bottom-3 right-3 bg-white px-3 py-1 rounded-full shadow">
                       <span className="text-sm font-semibold text-airbnb-dark">
-                        ${favorite.property_price}/night
+                        ${favorite.price_per_night}/night
                       </span>
                     </div>
                   </div>
 
                   <div className="p-4">
                     <h3 className="font-semibold text-lg text-airbnb-dark group-hover:text-airbnb-pink transition">
-                      {favorite.property_name}
+                      {favorite.name}
                     </h3>
-                    <p className="text-sm text-airbnb-gray mt-1">📍 {favorite.property_location}</p>
+                    <p className="text-sm text-airbnb-gray mt-1">📍 {favorite.location}</p>
                     <p className="text-sm text-airbnb-gray mt-2">
                       Added on{' '}
                       {new Date(favorite.created_at).toLocaleDateString('en-US', {

@@ -166,17 +166,31 @@ const MyBookings = () => {
                   {/* Property Image */}
                   <div className="mb-4 md:mb-0">
                     <Link to={`/traveler/property/${booking.property_id}`}>
-                      {booking.property_photo ? (
-                        <img
-                          src={`http://localhost:5002${booking.property_photo}`}
-                          alt={booking.property_name}
-                          className="h-32 w-48 object-cover rounded-lg"
-                        />
-                      ) : (
-                        <div className="h-32 w-48 bg-gray-200 rounded-lg flex items-center justify-center text-4xl">
-                          🏠
-                        </div>
-                      )}
+                      <div className="h-32 w-48 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
+                        {(() => {
+                          // Parse photos if it's a string, or use as is if already an array
+                          let photos = booking.photos;
+                          if (typeof photos === 'string') {
+                            try {
+                              photos = JSON.parse(photos);
+                            } catch (e) {
+                              photos = [];
+                            }
+                          }
+                          return photos && photos.length > 0 ? (
+                            <img
+                              src={`http://localhost:5002${photos[0]}`}
+                              alt={booking.property_name}
+                              className="h-32 w-48 object-cover rounded-lg"
+                              onError={(e) => {
+                                e.target.parentElement.innerHTML = '<div class="text-4xl">🏠</div>';
+                              }}
+                            />
+                          ) : (
+                            <div className="text-4xl">🏠</div>
+                          );
+                        })()}
+                      </div>
                     </Link>
                   </div>
 
@@ -198,7 +212,7 @@ const MyBookings = () => {
                       </span>
                     </div>
 
-                    <p className="text-airbnb-gray mb-3">📍 {booking.property_location}</p>
+                    <p className="text-airbnb-gray mb-3">📍 {booking.location}</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                       <div>

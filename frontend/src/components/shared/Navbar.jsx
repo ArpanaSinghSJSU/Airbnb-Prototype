@@ -39,7 +39,7 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to={`/${user?.role}/dashboard`} className="flex items-center space-x-2">
-              <span className="text-3xl font-bold text-airbnb-pink">airbnb</span>
+              <span className="text-3xl font-bold text-airbnb-pink">GoTour</span>
               <span className="hidden sm:block text-xs text-airbnb-gray bg-gray-100 px-2 py-1 rounded">
                 {isTraveler ? 'Traveler' : 'Owner'}
               </span>

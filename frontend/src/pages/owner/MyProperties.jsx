@@ -112,6 +112,9 @@ const MyProperties = () => {
                       src={`http://localhost:5002${property.photos[0]}`}
                       alt={property.name}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-6xl">🏠</div>';
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-6xl">

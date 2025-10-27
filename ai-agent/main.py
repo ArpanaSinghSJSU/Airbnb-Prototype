@@ -13,8 +13,8 @@ from database import Database
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="AI Concierge Agent",
-    description="Personalized trip planning AI agent for Airbnb Prototype",
+    title="GoTour AI Concierge",
+    description="Personalized trip planning AI agent for GoTour",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
@@ -44,7 +44,7 @@ async def startup_event():
 async def root():
     """Root endpoint"""
     return {
-        "service": "AI Concierge Agent",
+        "service": "GoTour AI Concierge",
         "version": "1.0.0",
         "status": "running",
         "docs": "/docs"

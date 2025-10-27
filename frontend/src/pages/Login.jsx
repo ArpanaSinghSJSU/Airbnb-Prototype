@@ -27,7 +27,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-red-50 py-12 px-4">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-airbnb-pink mb-2">airbnb</h1>
+          <h1 className="text-4xl font-bold text-airbnb-pink mb-2">GoTour</h1>
           <h2 className="text-2xl font-bold text-airbnb-dark">Welcome back</h2>
           <p className="mt-2 text-sm text-airbnb-gray">
             Log in to continue your journey
@@ -105,15 +105,6 @@ const Login = () => {
               Sign up now
             </Link>
           </p>
-        </div>
-
-        {/* Demo Credentials Helper */}
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-xs font-semibold text-airbnb-dark mb-2">Demo Credentials:</p>
-          <div className="text-xs text-airbnb-gray space-y-1">
-            <p>Create a new account or use test credentials from backend</p>
-            <p className="text-xs">Password for test users: <code className="bg-white px-1 py-0.5 rounded">password123</code></p>
-          </div>
         </div>
       </div>
     </div>

@@ -38,7 +38,7 @@ class Booking {
 
   static async findByOwnerId(ownerId) {
     const [rows] = await db.query(
-      `SELECT b.*, p.name as property_name, p.location, u.name as traveler_name, u.email as traveler_email 
+      `SELECT b.*, p.name as property_name, p.location, p.photos, u.name as traveler_name, u.email as traveler_email 
        FROM bookings b 
        JOIN properties p ON b.property_id = p.id 
        JOIN users u ON b.traveler_id = u.id 

@@ -83,17 +83,31 @@ const History = () => {
                   {/* Property Image */}
                   <div className="mb-4 md:mb-0">
                     <Link to={`/traveler/property/${trip.property_id}`}>
-                      {trip.property_photo ? (
-                        <img
-                          src={`http://localhost:5002${trip.property_photo}`}
-                          alt={trip.property_name}
-                          className="h-32 w-48 object-cover rounded-lg"
-                        />
-                      ) : (
-                        <div className="h-32 w-48 bg-gray-200 rounded-lg flex items-center justify-center text-4xl">
-                          🏠
-                        </div>
-                      )}
+                      <div className="h-32 w-48 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
+                        {(() => {
+                          // Parse photos if it's a string, or use as is if already an array
+                          let photos = trip.photos;
+                          if (typeof photos === 'string') {
+                            try {
+                              photos = JSON.parse(photos);
+                            } catch (e) {
+                              photos = [];
+                            }
+                          }
+                          return photos && photos.length > 0 ? (
+                            <img
+                              src={`http://localhost:5002${photos[0]}`}
+                              alt={trip.property_name}
+                              className="h-32 w-48 object-cover rounded-lg"
+                              onError={(e) => {
+                                e.target.parentElement.innerHTML = '<div class="text-4xl">🏠</div>';
+                              }}
+                            />
+                          ) : (
+                            <div className="text-4xl">🏠</div>
+                          );
+                        })()}
+                      </div>
                     </Link>
                   </div>
 
@@ -111,7 +125,7 @@ const History = () => {
                       </span>
                     </div>
 
-                    <p className="text-airbnb-gray mb-3">📍 {trip.property_location}</p>
+                    <p className="text-airbnb-gray mb-3">📍 {trip.location}</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                       <div>

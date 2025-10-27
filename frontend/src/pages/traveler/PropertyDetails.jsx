@@ -134,25 +134,41 @@ const PropertyDetails = () => {
 
         {/* Property Images */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          <div className="h-96 bg-gray-200 rounded-xl overflow-hidden">
+          <div className="h-96 bg-gray-200 rounded-xl overflow-hidden relative">
             {property.photos && property.photos.length > 0 ? (
-              <img
-                src={`http://localhost:5002${property.photos[0]}`}
-                alt={property.name}
-                className="w-full h-full object-cover"
-              />
+              <>
+                <img
+                  src={`http://localhost:5002${property.photos[0]}`}
+                  alt={property.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-8xl">🏠</div>';
+                  }}
+                />
+              </>
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-8xl">🏠</div>
+              <div className="w-full h-full flex items-center justify-center text-8xl">
+                🏠
+              </div>
             )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             {property.photos && property.photos.slice(1, 5).map((photo, idx) => (
-              <div key={idx} className="h-44 bg-gray-200 rounded-xl overflow-hidden">
-                <img
-                  src={`http://localhost:5002${photo}`}
-                  alt={`${property.name} ${idx + 2}`}
-                  className="w-full h-full object-cover"
-                />
+              <div key={idx} className="h-44 bg-gray-200 rounded-xl overflow-hidden relative">
+                {photo ? (
+                  <img
+                    src={`http://localhost:5002${photo}`}
+                    alt={`${property.name} ${idx + 2}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-4xl">🏠</div>';
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-4xl">
+                    🏠
+                  </div>
+                )}
               </div>
             ))}
           </div>

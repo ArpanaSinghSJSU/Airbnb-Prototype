@@ -57,7 +57,7 @@ const Signup = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-red-50 py-12 px-4">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-airbnb-pink mb-2">airbnb</h1>
+          <h1 className="text-4xl font-bold text-airbnb-pink mb-2">GoTour</h1>
           <h2 className="text-2xl font-bold text-airbnb-dark">Create your account</h2>
           <p className="mt-2 text-sm text-airbnb-gray">
             Start your journey with us today

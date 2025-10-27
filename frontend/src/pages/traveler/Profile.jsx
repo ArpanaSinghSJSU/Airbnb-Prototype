@@ -138,6 +138,9 @@ const Profile = () => {
                   src={`http://localhost:5002${profile.profile_picture}`}
                   alt="Profile"
                   className="w-24 h-24 rounded-full object-cover"
+                  onError={(e) => {
+                    e.target.parentElement.innerHTML = `<div class="w-24 h-24 rounded-full bg-airbnb-pink text-white flex items-center justify-center text-3xl font-bold">${user?.name?.charAt(0).toUpperCase()}</div>`;
+                  }}
                 />
               ) : (
                 <div className="w-24 h-24 rounded-full bg-airbnb-pink text-white flex items-center justify-center text-3xl font-bold">

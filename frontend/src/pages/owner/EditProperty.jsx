@@ -331,11 +331,14 @@ const EditProperty = () => {
                 <h2 className="text-xl font-semibold text-airbnb-dark mb-4">Current Photos</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {existingPhotos.map((photo, idx) => (
-                    <div key={idx} className="relative h-32 bg-gray-200 rounded-lg overflow-hidden">
+                    <div key={idx} className="relative h-32 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
                       <img
                         src={`http://localhost:5002${photo}`}
                         alt={`Property ${idx + 1}`}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.parentElement.style.display = 'none';
+                        }}
                       />
                     </div>
                   ))}

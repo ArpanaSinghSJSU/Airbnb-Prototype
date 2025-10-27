@@ -1,6 +1,6 @@
-# Airbnb Prototype
+# GoTour
 
-A full-stack Airbnb clone with Node.js/Express backend, React frontend, and Python AI Concierge Agent.
+A full-stack travel platform with Node.js/Express backend, React frontend, and Python AI Concierge Agent.
 
 ## 📋 Table of Contents
 
@@ -13,7 +13,7 @@ A full-stack Airbnb clone with Node.js/Express backend, React frontend, and Pyth
 
 ## Overview
 
-This is a **Airbnb prototype** consisting of three main components:
+This is **GoTour**, a travel booking and trip planning platform consisting of three main components:
 
 ### **1. Backend (Node.js/Express)** 
 - **Port**: `5002`

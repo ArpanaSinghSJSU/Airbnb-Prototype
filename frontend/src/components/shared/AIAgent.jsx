@@ -53,7 +53,7 @@ const AIAgent = ({ onClose, bookingId = null, bookings = [], onBookingChange = n
       let response = '';
 
       if (!bookingId) {
-        response = `❌ I need a booking ID to generate a personalized trip plan. Please access this from your booking page!`;
+        response = `❌ I need an **ACCEPTED** booking to generate a personalized trip plan.\n\n📝 **To use this feature:**\n1. Go to "My Bookings" page\n2. Wait for your booking to be accepted by the property owner\n3. Once accepted, come back here to plan your trip!\n\n💡 **Note:** Only confirmed (ACCEPTED) bookings can be used for trip planning. Pending bookings must be approved first.`;
       } else {
         // Always generate trip plan with extracted preferences
         // Supports natural language - extracts preferences from ANY user input
@@ -262,34 +262,47 @@ const AIAgent = ({ onClose, bookingId = null, bookings = [], onBookingChange = n
             </button>
           </div>
 
-          {/* Booking Selector */}
-          {bookings.length > 1 && onBookingChange && (
+          {/* Booking Info/Selector */}
+          {bookings && bookings.length > 0 && (
             <div className="mt-2">
-              <label className="text-xs opacity-90 mb-1 block">Select Booking:</label>
-              <select
-                value={bookingId || ''}
-                onChange={(e) => {
-                  onBookingChange(parseInt(e.target.value));
-                  // Clear messages when switching bookings
-                  setMessages([
-                    {
-                      type: 'bot',
-                      text: "👋 Hi! I'm your AI Travel Concierge. I'll create a personalized trip plan based on your booking!",
-                    },
-                    {
-                      type: 'bot',
-                      text: '💬 Just tell me what you want! Examples:\n• "Plan my trip"\n• "Indian restaurants with kids"\n• "Italian food, vegan options"\n• "Thai cuisine, no long hikes"\n\nI\'ll extract your preferences and generate a complete itinerary! 🎯',
-                    },
-                  ]);
-                }}
-                className="w-full bg-white bg-opacity-20 text-white text-sm px-3 py-2 rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
-              >
-                {bookings.map((booking) => (
-                  <option key={booking.id} value={booking.id} className="text-gray-900">
-                    {booking.property_name} ({new Date(booking.start_date).toLocaleDateString()} - {new Date(booking.end_date).toLocaleDateString()})
-                  </option>
-                ))}
-              </select>
+              {bookings.length === 1 ? (
+                // Single booking - show as text
+                <div>
+                  <label className="text-xs opacity-90 mb-1 block">Planning for:</label>
+                  <div className="bg-white bg-opacity-20 text-white text-sm px-3 py-2 rounded-lg border border-white border-opacity-30">
+                    {bookings[0].property_name} ({new Date(bookings[0].start_date).toLocaleDateString()} - {new Date(bookings[0].end_date).toLocaleDateString()})
+                  </div>
+                </div>
+              ) : (
+                // Multiple bookings - show dropdown
+                <div>
+                  <label className="text-xs opacity-90 mb-1 block">Select Booking:</label>
+                  <select
+                    value={bookingId || ''}
+                    onChange={(e) => {
+                      onBookingChange(parseInt(e.target.value));
+                      // Clear messages when switching bookings
+                      setMessages([
+                        {
+                          type: 'bot',
+                          text: "👋 Hi! I'm your AI Travel Concierge. I'll create a personalized trip plan based on your booking!",
+                        },
+                        {
+                          type: 'bot',
+                          text: '💬 Just tell me what you want! Examples:\n• "Plan my trip"\n• "Indian restaurants with kids"\n• "Italian food, vegan options"\n• "Thai cuisine, no long hikes"\n\nI\'ll extract your preferences and generate a complete itinerary! 🎯',
+                        },
+                      ]);
+                    }}
+                    className="w-full bg-white bg-opacity-20 text-white text-sm px-3 py-2 rounded-lg border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
+                  >
+                    {bookings.map((booking) => (
+                      <option key={booking.id} value={booking.id} className="text-gray-900">
+                        {booking.property_name} ({new Date(booking.start_date).toLocaleDateString()} - {new Date(booking.end_date).toLocaleDateString()})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           )}
         </div>

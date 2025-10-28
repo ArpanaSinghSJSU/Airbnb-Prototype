@@ -71,6 +71,9 @@ exports.uploadProfilePicture = async (req, res) => {
 
     await User.update(userId, { profile_picture: profilePicture });
 
+    // Update session with new profile picture
+    req.session.user.profile_picture = profilePicture;
+
     res.json({ 
       success: true, 
       message: 'Profile picture uploaded successfully',

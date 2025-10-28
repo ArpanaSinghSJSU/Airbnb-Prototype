@@ -119,19 +119,9 @@ cd Airbnb-Prototype
 npm install
 ```
 
-Verify installation:
-```bash
-npm list --depth=0
-```
-
 #### 2.2 Configure Backend Environment
 
-Create environment file:
-```bash
-cp .env.example .env
-```
-
-Edit `.env` with your settings:
+Create `.env` environment file with your settings:
 ```env
 # Server Configuration
 PORT=5002

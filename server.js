@@ -50,17 +50,26 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
   customCss: '.swagger-ui .topbar { display: none }',
 }));
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'GoTour API Server',
+    docs: '/api-docs'
+  });
+});
+
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/traveler', travelerRoutes);
-app.use('/api/owner', ownerRoutes);
-app.use('/api/properties', propertyRoutes);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/favorites', favoriteRoutes);
-app.use('/api/data', dataRoutes);
+app.use('/auth', authRoutes);
+app.use('/traveler', travelerRoutes);
+app.use('/owner', ownerRoutes);
+app.use('/properties', propertyRoutes);
+app.use('/bookings', bookingRoutes);
+app.use('/favorites', favoriteRoutes);
+app.use('/data', dataRoutes);
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('/health', (req, res) => {
   res.json({ 
     success: true, 
     message: 'Server is running',
@@ -88,8 +97,8 @@ app.use((req, res) => {
 // Start server
 const PORT = process.env.PORT || 5002;
 app.listen(PORT, () => {
-  console.log(`\n🚀 Server running on port ${PORT}`);
-  console.log(`📡 API available at http://localhost:${PORT}/api`);
-  console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
-  console.log(`🏥 Health Check: http://localhost:${PORT}/api/health\n`);
+  console.log(`\nServer running on port ${PORT}`);
+  console.log(`API available at http://localhost:${PORT}`);
+  console.log(`API Documentation: http://localhost:${PORT}/api-docs`);
+  console.log(`Health Check: http://localhost:${PORT}/health\n`);
 });

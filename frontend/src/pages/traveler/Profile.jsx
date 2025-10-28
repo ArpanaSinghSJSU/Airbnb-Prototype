@@ -4,7 +4,7 @@ import { travelerAPI, dataAPI } from '../../services/api';
 import Navbar from '../../components/shared/Navbar';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [profile, setProfile] = useState(null);
   const [countries, setCountries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -100,6 +100,8 @@ const Profile = () => {
       if (response.data.success) {
         setMessage({ type: 'success', text: 'Profile picture updated!' });
         fetchProfile();
+        // Refresh auth context to update navbar
+        await refreshUser();
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to upload photo' });

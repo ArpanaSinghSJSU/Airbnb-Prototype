@@ -72,7 +72,21 @@ const Navbar = () => {
                 to={profileLink}
                 className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition"
               >
-                <div className="w-8 h-8 bg-airbnb-pink text-white rounded-full flex items-center justify-center font-semibold">
+                {user?.profile_picture ? (
+                  <img
+                    src={`http://localhost:5002${user.profile_picture}`}
+                    alt={user.name}
+                    className="w-8 h-8 rounded-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div 
+                  className="w-8 h-8 bg-airbnb-pink text-white rounded-full flex items-center justify-center font-semibold"
+                  style={{ display: user?.profile_picture ? 'none' : 'flex' }}
+                >
                   {user?.name?.charAt(0).toUpperCase()}
                 </div>
                 <span className="hidden sm:block text-sm font-medium text-airbnb-dark">

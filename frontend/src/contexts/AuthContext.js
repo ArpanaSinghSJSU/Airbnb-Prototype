@@ -69,6 +69,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      const response = await authAPI.checkAuth();
+      if (response.data.success) {
+        setUser(response.data.user);
+        return { success: true };
+      }
+      return { success: false };
+    } catch (err) {
+      return { success: false };
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -76,6 +89,7 @@ export const AuthProvider = ({ children }) => {
     login,
     signup,
     logout,
+    refreshUser,
     isAuthenticated: !!user,
     isTraveler: user?.role === 'traveler',
     isOwner: user?.role === 'owner',

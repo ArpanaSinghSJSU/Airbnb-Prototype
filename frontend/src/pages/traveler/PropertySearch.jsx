@@ -166,7 +166,7 @@ const PropertySearch = () => {
                 <div className="relative h-64 bg-gray-200 rounded-t-xl overflow-hidden">
                   {property.photos && property.photos.length > 0 ? (
                     <img
-                      src={`http://localhost:5002${property.photos[0]}`}
+                      src={`http://localhost:3003${property.photos[0]}`}
                       alt={property.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                       onError={(e) => {
@@ -180,7 +180,7 @@ const PropertySearch = () => {
                   )}
                   <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded-full shadow">
                     <span className="text-sm font-semibold text-airbnb-dark">
-                      ${property.price_per_night}/night
+                      ${property.pricePerNight}/night
                     </span>
                   </div>
                 </div>
@@ -190,14 +190,16 @@ const PropertySearch = () => {
                     {property.name}
                   </h3>
                   <p className="text-sm text-airbnb-gray mt-1">
-                    📍 {property.location}
+                    📍 {property.city && property.state 
+                      ? `${property.city}, ${property.state}` 
+                      : 'Location'}
                   </p>
                   <p className="text-sm text-airbnb-gray mt-1">
                     {property.type && `${property.type} • `}
                     {property.bedrooms} bed • {property.bathrooms} bath
                   </p>
                   <p className="text-sm text-airbnb-gray mt-1">
-                    👥 Up to {property.max_guests} guests
+                    👥 Up to {property.maxGuests} guests
                   </p>
                   
                   {property.amenities && Array.isArray(property.amenities) && property.amenities.length > 0 && (

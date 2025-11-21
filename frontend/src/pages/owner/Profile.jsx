@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { refreshUser, selectUser } from '../../redux/slices/authSlice';
 import { ownerAPI, dataAPI } from '../../services/api';
 import Navbar from '../../components/shared/Navbar';
 
 const Profile = () => {
-  const { user, refreshUser } = useAuth();
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser);
   const [profile, setProfile] = useState(null);
   const [countries, setCountries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -98,12 +100,16 @@ const Profile = () => {
     try {
       const response = await ownerAPI.uploadProfilePicture(formData);
       if (response.data.success) {
+        console.log('✅ Profile picture uploaded successfully');
         setMessage({ type: 'success', text: 'Profile picture updated!' });
         fetchProfile();
-        // Refresh auth context to update navbar
-        await refreshUser();
+        // Refresh auth state to update navbar
+        console.log('🔄 Calling refreshUser to update navbar...');
+        await dispatch(refreshUser());
+        console.log('✨ Navbar should now be updated!');
       }
     } catch (error) {
+      console.error('❌ Upload error:', error);
       setMessage({ type: 'error', text: 'Failed to upload photo' });
     }
   };
@@ -137,7 +143,7 @@ const Profile = () => {
             <div className="relative">
               {profile?.profile_picture ? (
                 <img
-                  src={`http://localhost:5002${profile.profile_picture}`}
+                  src={`http://localhost:3002${profile.profile_picture}`}
                   alt="Profile"
                   className="w-24 h-24 rounded-full object-cover"
                   onError={(e) => {

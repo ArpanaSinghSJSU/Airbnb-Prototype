@@ -88,12 +88,12 @@ const Favorites = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {favorites.map((favorite) => (
               <div
-                key={favorite.property_id}
+                key={favorite.propertyId}
                 className="bg-white rounded-xl shadow hover:shadow-xl transition group relative"
               >
                 {/* Remove Button */}
                 <button
-                  onClick={() => handleRemove(favorite.property_id)}
+                  onClick={() => handleRemove(favorite.propertyId)}
                   className="absolute top-3 right-3 z-10 bg-white hover:bg-red-50 p-2 rounded-full shadow-lg transition"
                   title="Remove from favorites"
                 >
@@ -106,7 +106,7 @@ const Favorites = () => {
                   </svg>
                 </button>
 
-                <Link to={`/traveler/property/${favorite.property_id}`}>
+                <Link to={`/traveler/property/${favorite.propertyId}`}>
                   <div className="relative h-64 bg-gray-200 rounded-t-xl overflow-hidden">
                     {(() => {
                       // Parse photos if it's a string, or use as is if already an array
@@ -120,7 +120,7 @@ const Favorites = () => {
                       }
                       return photos && photos.length > 0 ? (
                         <img
-                          src={`http://localhost:5002${photos[0]}`}
+                          src={`http://localhost:3003${photos[0]}`}
                           alt={favorite.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                           onError={(e) => {

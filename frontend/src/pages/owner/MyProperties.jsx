@@ -109,7 +109,7 @@ const MyProperties = () => {
                 <div className="relative h-64 bg-gray-200 rounded-t-xl overflow-hidden">
                   {property.photos && property.photos.length > 0 ? (
                     <img
-                      src={`http://localhost:5002${property.photos[0]}`}
+                      src={`http://localhost:3003${property.photos[0]}`}
                       alt={property.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -130,7 +130,11 @@ const MyProperties = () => {
 
                 <div className="p-4">
                   <h3 className="font-semibold text-lg text-airbnb-dark">{property.name}</h3>
-                  <p className="text-sm text-airbnb-gray mt-1">📍 {property.location}</p>
+                  <p className="text-sm text-airbnb-gray mt-1">
+                    📍 {property.city && property.state 
+                      ? `${property.city}, ${property.state}` 
+                      : 'Location'}
+                  </p>
                   <p className="text-sm text-airbnb-gray mt-1">
                     {property.type && `${property.type} • `}
                     {property.bedrooms} bed • {property.bathrooms} bath

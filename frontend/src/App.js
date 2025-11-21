@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Provider, useSelector, useDispatch } from 'react-redux';
+import store from './redux/store';
+import { checkAuth } from './redux/slices/authSlice';
+import { selectUser, selectAuthLoading } from './redux/slices/authSlice';
 
 // Auth Pages
 import Login from './pages/Login';
@@ -25,7 +28,8 @@ import ManageBookings from './pages/owner/ManageBookings';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requiredRole }) => {
-  const { user, loading } = useAuth();
+  const user = useSelector(selectUser);
+  const loading = useSelector(selectAuthLoading);
 
   if (loading) {
     return (
@@ -47,7 +51,16 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 };
 
 function AppRoutes() {
-  const { user } = useAuth();
+  const user = useSelector(selectUser);
+  const dispatch = useDispatch();
+
+  // Check authentication status on mount
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      dispatch(checkAuth());
+    }
+  }, [dispatch]);
 
   return (
     <Routes>
@@ -88,11 +101,11 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
+    <Provider store={store}>
+      <Router>
         <AppRoutes />
-      </AuthProvider>
-    </Router>
+      </Router>
+    </Provider>
   );
 }
 

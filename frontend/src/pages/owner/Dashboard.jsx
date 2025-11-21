@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../redux/slices/authSlice';
 import { ownerAPI, bookingAPI } from '../../services/api';
 import Navbar from '../../components/shared/Navbar';
 
 const OwnerDashboard = () => {
-  const { user } = useAuth();
+  const user = useSelector(selectUser);
   const [dashboard, setDashboard] = useState(null);
   const [bookings, setBookings] = useState({ pending: [], accepted: [] });
   const [loading, setLoading] = useState(true);
@@ -27,7 +28,7 @@ const OwnerDashboard = () => {
       // Calculate stats
       const pendingCount = bookings.filter((b) => b.status === 'PENDING').length;
       const acceptedBookings = bookings.filter((b) => b.status === 'ACCEPTED');
-      const totalRevenue = acceptedBookings.reduce((sum, b) => sum + parseFloat(b.total_price || 0), 0);
+      const totalRevenue = acceptedBookings.reduce((sum, b) => sum + parseFloat(b.totalPrice || 0), 0);
 
       // Create dashboard data
       setDashboard({
@@ -129,27 +130,57 @@ const OwnerDashboard = () => {
                 <div className="space-y-4">
                   {bookings.pending.slice(0, 5).map((booking) => (
                     <div key={booking.id} className="border border-gray-200 rounded-lg p-4 hover:border-airbnb-pink transition">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-semibold text-airbnb-dark">
-                            {booking.property_name}
-                          </h3>
-                          <p className="text-sm text-airbnb-gray mt-1">
-                            Guest: {booking.traveler_name}
-                          </p>
-                          <p className="text-sm text-airbnb-gray mt-1">
-                            📅 {new Date(booking.start_date).toLocaleDateString()} - {new Date(booking.end_date).toLocaleDateString()}
-                          </p>
-                          <p className="text-sm text-airbnb-gray mt-1">
-                            👥 {booking.guests} guests • ${booking.total_price}
-                          </p>
+                      <div className="flex items-start space-x-4">
+                        {/* Property Image */}
+                        <div className="h-20 w-32 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
+                          {(() => {
+                            // Get photos from populated property object
+                            let photos = booking.property?.photos;
+                            if (typeof photos === 'string') {
+                              try {
+                                photos = JSON.parse(photos);
+                              } catch (e) {
+                                photos = [];
+                              }
+                            }
+                            return photos && photos.length > 0 ? (
+                              <img
+                                src={`http://localhost:3003${photos[0]}`}
+                                alt={booking.property?.name || 'Property'}
+                                className="h-20 w-32 object-cover"
+                                onError={(e) => {
+                                  e.target.parentElement.innerHTML = '<div class="text-2xl">🏠</div>';
+                                }}
+                              />
+                            ) : (
+                              <div className="text-2xl">🏠</div>
+                            );
+                          })()}
                         </div>
-                        <Link
-                          to="/owner/bookings"
-                          className="bg-airbnb-pink hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
-                        >
-                          Review
-                        </Link>
+
+                        {/* Booking Details */}
+                        <div className="flex-1 flex justify-between items-start">
+                          <div>
+                            <h3 className="font-semibold text-airbnb-dark">
+                              {booking.property?.name || 'Property'}
+                            </h3>
+                            <p className="text-sm text-airbnb-gray mt-1">
+                              Guest: {booking.traveler?.fullName || 'Guest'}
+                            </p>
+                            <p className="text-sm text-airbnb-gray mt-1">
+                              📅 {new Date(booking.checkInDate).toLocaleDateString()} - {new Date(booking.checkOutDate).toLocaleDateString()}
+                            </p>
+                            <p className="text-sm text-airbnb-gray mt-1">
+                              👥 {booking.guests} guests • ${booking.totalPrice}
+                            </p>
+                          </div>
+                          <Link
+                            to="/owner/bookings"
+                            className="bg-airbnb-pink hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap"
+                          >
+                            Review
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   ))}

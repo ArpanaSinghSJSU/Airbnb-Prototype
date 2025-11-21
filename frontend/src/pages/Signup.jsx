@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { signupUser, selectAuthLoading, selectAuthError, clearError } from '../redux/slices/authSlice';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -10,9 +11,10 @@ const Signup = () => {
     confirmPassword: '',
     role: 'traveler',
   });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { signup } = useAuth();
+  const [localError, setLocalError] = useState('');
+  const dispatch = useDispatch();
+  const loading = useSelector(selectAuthLoading);
+  const error = useSelector(selectAuthError);
 
   const handleChange = (e) => {
     setFormData({
@@ -23,34 +25,32 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setLocalError('');
+    dispatch(clearError());
 
     // Validation
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setLocalError('Passwords do not match');
       return;
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setLocalError('Password must be at least 6 characters');
       return;
     }
 
-    setLoading(true);
-
-    const result = await signup({
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-      role: formData.role,
-    });
-
-    setLoading(false);
-
-    if (!result.success) {
-      setError(result.message);
+    try {
+      await dispatch(signupUser({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+      })).unwrap();
+      // If successful, will auto-login and redirect via App.js
+    } catch (err) {
+      // Error is handled by Redux state
+      console.error('Signup failed:', err);
     }
-    // If successful, will auto-login and redirect via App.js
   };
 
   return (
@@ -65,10 +65,10 @@ const Signup = () => {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
+          {(error || localError) && (
             <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded">
               <p className="font-medium">Error</p>
-              <p className="text-sm">{error}</p>
+              <p className="text-sm">{error || localError}</p>
             </div>
           )}
 

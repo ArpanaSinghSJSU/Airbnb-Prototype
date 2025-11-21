@@ -5,11 +5,11 @@ const AIAgent = ({ onClose, bookingId = null, bookings = [], onBookingChange = n
   const [messages, setMessages] = useState([
     {
       type: 'bot',
-      text: "👋 Hi! I'm your AI Travel Concierge. I'll create a personalized trip plan based on your booking!",
+      text: "👋 Hi! I'm your AI Travel Concierge. I create personalized trip plans based on your booking!",
     },
     {
       type: 'bot',
-      text: '💬 Just tell me what you want! Examples:\n• "Plan my trip"\n• "Indian restaurants with kids"\n• "Italian food, vegan options"\n• "Thai cuisine, no long hikes"\n\nI\'ll extract your preferences and generate a complete itinerary! 🎯',
+      text: '💬 **You can ask me anything!**\n\n📅 **For a complete itinerary:**\n• "Plan my trip"\n• "Plan my trip with Indian restaurants"\n\n💭 **Or ask specific questions:**\n• "Find Indian restaurants"\n• "What beach activities are available?"\n• "Tell me about the weather"\n• "What should I pack?"\n\nI can answer questions OR create full day-by-day plans! 🚀',
     },
   ]);
   const [input, setInput] = useState('');
@@ -53,25 +53,32 @@ const AIAgent = ({ onClose, bookingId = null, bookings = [], onBookingChange = n
       let response = '';
 
       if (!bookingId) {
-        response = `❌ I need an **ACCEPTED** booking to generate a personalized trip plan.\n\n📝 **To use this feature:**\n1. Go to "My Bookings" page\n2. Wait for your booking to be accepted by the property owner\n3. Once accepted, come back here to plan your trip!\n\n💡 **Note:** Only confirmed (ACCEPTED) bookings can be used for trip planning. Pending bookings must be approved first.`;
+        response = `❌ I need an **ACCEPTED** booking to help you with your trip.\n\n📝 **To use this feature:**\n1. Go to "My Bookings" page\n2. Wait for your booking to be accepted by the property owner\n3. Once accepted, come back here!\n\n💡 **Note:** Only confirmed (ACCEPTED) bookings can be used.`;
       } else {
-        // Always generate trip plan with extracted preferences
-        // Supports natural language - extracts preferences from ANY user input
-        const interests = extractInterests(userMessage);
-        const cuisinePrefs = extractCuisinePreferences(userMessage);
+        // Check if user wants full itinerary or has a specific question
+        const wantsFullItinerary = shouldGenerateFullItinerary(userMessage);
         
-        const result = await aiAgentAPI.generatePlan(bookingId, {
-          budget: 'medium',
-          interests: [...interests, ...cuisinePrefs], // Merge interests and cuisine preferences
-          dietary_restrictions: extractDietaryRestrictions(userMessage),
-          has_children: userMessage.toLowerCase().includes('kid') || userMessage.toLowerCase().includes('child') || userMessage.toLowerCase().includes('family'),
-          avoid_long_hikes: userMessage.toLowerCase().includes('no hike') || userMessage.toLowerCase().includes('avoid hike')
-        });
+        if (wantsFullItinerary) {
+          // Generate full itinerary
+          const interests = extractInterests(userMessage);
+          const cuisinePrefs = extractCuisinePreferences(userMessage);
+          
+          const result = await aiAgentAPI.generatePlan(bookingId, {
+            budget: 'medium',
+            interests: [...interests, ...cuisinePrefs],
+            dietary_restrictions: extractDietaryRestrictions(userMessage),
+            has_children: userMessage.toLowerCase().includes('kid') || userMessage.toLowerCase().includes('child') || userMessage.toLowerCase().includes('family'),
+            avoid_long_hikes: userMessage.toLowerCase().includes('no hike') || userMessage.toLowerCase().includes('avoid hike')
+          });
 
-        if (result.data.success) {
-          response = formatItineraryText(result.data);
+          if (result.data.success) {
+            response = formatItineraryText(result.data);
+          } else {
+            response = `❌ Sorry, I couldn't generate your itinerary. ${result.data.message || 'Please try again later.'}`;
+          }
         } else {
-          response = `❌ Sorry, I couldn't generate your itinerary. ${result.data.message || 'Please try again later.'}`;
+          // Answer specific question without full itinerary
+          response = await answerSpecificQuestion(userMessage, bookingId);
         }
       }
 
@@ -89,6 +96,66 @@ const AIAgent = ({ onClose, bookingId = null, bookings = [], onBookingChange = n
       setMessages((prev) => [...prev, { type: 'bot', text: errorMessage }]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Helper: Determine if user wants full itinerary or specific answer
+  const shouldGenerateFullItinerary = (message) => {
+    const lowerMessage = message.toLowerCase();
+    
+    // Keywords that indicate they want a full itinerary
+    const itineraryKeywords = [
+      'plan my trip',
+      'plan trip',
+      'create itinerary',
+      'full itinerary',
+      'trip plan',
+      'plan everything',
+      'plan the trip',
+      'create trip plan',
+      'make itinerary',
+      'generate itinerary',
+      'day by day',
+      'complete plan'
+    ];
+    
+    return itineraryKeywords.some(keyword => lowerMessage.includes(keyword));
+  };
+
+  // Helper: Answer specific questions without full itinerary
+  const answerSpecificQuestion = async (message, bookingId) => {
+    try {
+      // Extract preferences from the message
+      const cuisinePrefs = extractCuisinePreferences(message);
+      const interests = extractInterests(message);
+      const dietaryRestrictions = extractDietaryRestrictions(message);
+      
+      const preferences = {
+        interests: [...interests, ...cuisinePrefs],
+        dietary_restrictions: dietaryRestrictions,
+        has_children: message.toLowerCase().includes('kid') || message.toLowerCase().includes('child') || message.toLowerCase().includes('family')
+      };
+      
+      // Call the AI agent API to answer the specific question
+      const result = await aiAgentAPI.answerQuery(message, bookingId, preferences);
+      
+      if (result.data.success) {
+        return result.data.answer;
+      } else {
+        return `❌ Sorry, I couldn't answer that question. ${result.data.message || 'Please try asking in a different way!'}`;
+      }
+      
+    } catch (error) {
+      console.error('Error answering question:', error);
+      
+      let errorMessage = '❌ Sorry, I encountered an error. ';
+      if (error.message?.includes('Network Error') || error.code === 'ECONNREFUSED') {
+        errorMessage += 'The AI Agent service is not running. Please make sure it\'s started on port 8000.';
+      } else {
+        errorMessage += error.response?.data?.error || error.message || 'Please try again later.';
+      }
+      
+      return errorMessage;
     }
   };
 
@@ -230,9 +297,9 @@ const AIAgent = ({ onClose, bookingId = null, bookings = [], onBookingChange = n
 
   const suggestedQuestions = [
     "Plan my trip",
-    "Indian restaurants with kids",
-    "Italian food, vegan options",
-    "Family activities, no long hikes",
+    "Find Indian restaurants",
+    "What beach activities are available?",
+    "Tell me about the weather",
   ];
 
   return (
@@ -270,7 +337,7 @@ const AIAgent = ({ onClose, bookingId = null, bookings = [], onBookingChange = n
                 <div>
                   <label className="text-xs opacity-90 mb-1 block">Planning for:</label>
                   <div className="bg-white bg-opacity-20 text-white text-sm px-3 py-2 rounded-lg border border-white border-opacity-30">
-                    {bookings[0].property_name} ({new Date(bookings[0].start_date).toLocaleDateString()} - {new Date(bookings[0].end_date).toLocaleDateString()})
+                    {bookings[0].property?.name || 'Property'} ({new Date(bookings[0].checkInDate).toLocaleDateString()} - {new Date(bookings[0].checkOutDate).toLocaleDateString()})
                   </div>
                 </div>
               ) : (
@@ -285,11 +352,11 @@ const AIAgent = ({ onClose, bookingId = null, bookings = [], onBookingChange = n
                       setMessages([
                         {
                           type: 'bot',
-                          text: "👋 Hi! I'm your AI Travel Concierge. I'll create a personalized trip plan based on your booking!",
+                          text: "👋 Hi! I'm your AI Travel Concierge. I create personalized trip plans based on your booking!",
                         },
                         {
                           type: 'bot',
-                          text: '💬 Just tell me what you want! Examples:\n• "Plan my trip"\n• "Indian restaurants with kids"\n• "Italian food, vegan options"\n• "Thai cuisine, no long hikes"\n\nI\'ll extract your preferences and generate a complete itinerary! 🎯',
+                          text: '💬 **You can ask me anything!**\n\n📅 **For a complete itinerary:**\n• "Plan my trip"\n• "Plan my trip with Indian restaurants"\n\n💭 **Or ask specific questions:**\n• "Find Indian restaurants"\n• "What beach activities are available?"\n• "Tell me about the weather"\n• "What should I pack?"\n\nI can answer questions OR create full day-by-day plans! 🚀',
                         },
                       ]);
                     }}
@@ -297,7 +364,7 @@ const AIAgent = ({ onClose, bookingId = null, bookings = [], onBookingChange = n
                   >
                     {bookings.map((booking) => (
                       <option key={booking.id} value={booking.id} className="text-gray-900">
-                        {booking.property_name} ({new Date(booking.start_date).toLocaleDateString()} - {new Date(booking.end_date).toLocaleDateString()})
+                        {booking.property?.name || 'Property'} ({new Date(booking.checkInDate).toLocaleDateString()} - {new Date(booking.checkOutDate).toLocaleDateString()})
                       </option>
                     ))}
                   </select>

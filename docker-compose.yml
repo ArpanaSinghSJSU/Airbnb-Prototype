@@ -1,0 +1,179 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: gotour-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: gotour_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - gotour-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/gotour_db --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Mongo Express - Web-based MongoDB admin interface
+  mongo-express:
+    image: mongo-express:latest
+    container_name: gotour-mongo-express
+    restart: unless-stopped
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: admin123
+      ME_CONFIG_MONGODB_URL: mongodb://admin:admin123@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin123
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongodb
+    networks:
+      - gotour-network
+
+  # Traveler Service - Authentication, Profile, Bookings
+  traveler-service:
+    build:
+      context: ./services/traveler-service
+      dockerfile: Dockerfile
+    container_name: gotour-traveler-service
+    restart: unless-stopped
+    environment:
+      TRAVELER_PORT: 3001
+      NODE_ENV: development
+      MONGODB_URI: mongodb://admin:admin123@mongodb:27017/gotour_db?authSource=admin
+      JWT_SECRET: your_super_secret_jwt_key_change_this_in_production_min_32_chars
+      JWT_EXPIRE: 7d
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "3001:3001"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - gotour-network
+    volumes:
+      - ./uploads:/app/uploads
+
+  # Owner Service - Property Management, Manage Bookings
+  owner-service:
+    build:
+      context: ./services/owner-service
+      dockerfile: Dockerfile
+    container_name: gotour-owner-service
+    restart: unless-stopped
+    environment:
+      OWNER_PORT: 3002
+      NODE_ENV: development
+      MONGODB_URI: mongodb://admin:admin123@mongodb:27017/gotour_db?authSource=admin
+      JWT_SECRET: your_super_secret_jwt_key_change_this_in_production_min_32_chars
+      JWT_EXPIRE: 7d
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "3002:3002"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - gotour-network
+    volumes:
+      - ./uploads:/app/uploads
+
+  # Property Service - Search, Details, Favorites
+  property-service:
+    build:
+      context: ./services/property-service
+      dockerfile: Dockerfile
+    container_name: gotour-property-service
+    restart: unless-stopped
+    environment:
+      PROPERTY_PORT: 3003
+      NODE_ENV: development
+      MONGODB_URI: mongodb://admin:admin123@mongodb:27017/gotour_db?authSource=admin
+      JWT_SECRET: your_super_secret_jwt_key_change_this_in_production_min_32_chars
+      JWT_EXPIRE: 7d
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "3003:3003"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - gotour-network
+    volumes:
+      - ./uploads:/app/uploads
+
+  # Booking Service - Create and Manage Bookings
+  booking-service:
+    build:
+      context: ./services/booking-service
+      dockerfile: Dockerfile
+    container_name: gotour-booking-service
+    restart: unless-stopped
+    environment:
+      BOOKING_PORT: 3004
+      NODE_ENV: development
+      MONGODB_URI: mongodb://admin:admin123@mongodb:27017/gotour_db?authSource=admin
+      JWT_SECRET: your_super_secret_jwt_key_change_this_in_production_min_32_chars
+      JWT_EXPIRE: 7d
+      FRONTEND_URL: http://localhost:3000
+      INTERNAL_API_KEY: ai-agent-internal-key-2024
+    ports:
+      - "3004:3004"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - gotour-network
+
+  # AI Agent Service (Python FastAPI)
+  ai-agent:
+    build:
+      context: ./services/ai-agent
+      dockerfile: Dockerfile
+    container_name: gotour-ai-agent
+    restart: unless-stopped
+    environment:
+      AI_AGENT_PORT: 8000
+      AI_AGENT_HOST: 0.0.0.0
+      # API Keys
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      TAVILY_API_KEY: ${TAVILY_API_KEY}
+      OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
+      # Microservices URLs (use container names for internal network)
+      BOOKING_SERVICE_URL: http://booking-service:3004
+      PROPERTY_SERVICE_URL: http://property-service:3003
+      TRAVELER_SERVICE_URL: http://traveler-service:3001
+      # Internal API Key for service-to-service communication
+      INTERNAL_API_KEY: ai-agent-internal-key-2024
+      # CORS Configuration
+      CORS_ORIGINS: http://localhost:3000,http://localhost:5002
+    ports:
+      - "8000:8000"
+    depends_on:
+      booking-service:
+        condition: service_started
+      property-service:
+        condition: service_started
+      traveler-service:
+        condition: service_started
+    networks:
+      - gotour-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  gotour-network:
+    driver: bridge

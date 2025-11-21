@@ -165,11 +165,11 @@ const MyBookings = () => {
                 <div className="flex flex-col md:flex-row md:items-center md:space-x-6">
                   {/* Property Image */}
                   <div className="mb-4 md:mb-0">
-                    <Link to={`/traveler/property/${booking.property_id}`}>
+                    <Link to={`/traveler/property/${booking.propertyId}`}>
                       <div className="h-32 w-48 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
                         {(() => {
-                          // Parse photos if it's a string, or use as is if already an array
-                          let photos = booking.photos;
+                          // Get photos from populated property object
+                          let photos = booking.property?.photos;
                           if (typeof photos === 'string') {
                             try {
                               photos = JSON.parse(photos);
@@ -179,8 +179,8 @@ const MyBookings = () => {
                           }
                           return photos && photos.length > 0 ? (
                             <img
-                              src={`http://localhost:5002${photos[0]}`}
-                              alt={booking.property_name}
+                              src={`http://localhost:3003${photos[0]}`}
+                              alt={booking.property?.name || 'Property'}
                               className="h-32 w-48 object-cover rounded-lg"
                               onError={(e) => {
                                 e.target.parentElement.innerHTML = '<div class="text-4xl">🏠</div>';
@@ -198,10 +198,10 @@ const MyBookings = () => {
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
                       <Link
-                        to={`/traveler/property/${booking.property_id}`}
+                        to={`/traveler/property/${booking.propertyId}`}
                         className="text-xl font-semibold text-airbnb-dark hover:text-airbnb-pink transition"
                       >
-                        {booking.property_name}
+                        {booking.property?.name || 'Property'}
                       </Link>
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
@@ -212,13 +212,17 @@ const MyBookings = () => {
                       </span>
                     </div>
 
-                    <p className="text-airbnb-gray mb-3">📍 {booking.location}</p>
+                    <p className="text-airbnb-gray mb-3">
+                      📍 {booking.property?.city && booking.property?.state 
+                        ? `${booking.property.city}, ${booking.property.state}` 
+                        : 'Location not available'}
+                    </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                       <div>
                         <p className="text-sm text-airbnb-gray">Check-in</p>
                         <p className="font-medium text-airbnb-dark">
-                          {new Date(booking.start_date).toLocaleDateString('en-US', {
+                          {new Date(booking.checkInDate).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric',
@@ -228,7 +232,7 @@ const MyBookings = () => {
                       <div>
                         <p className="text-sm text-airbnb-gray">Check-out</p>
                         <p className="font-medium text-airbnb-dark">
-                          {new Date(booking.end_date).toLocaleDateString('en-US', {
+                          {new Date(booking.checkOutDate).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric',
@@ -244,7 +248,7 @@ const MyBookings = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-airbnb-gray">Total Price</p>
-                        <p className="text-xl font-bold text-airbnb-dark">${booking.total_price}</p>
+                        <p className="text-xl font-bold text-airbnb-dark">${booking.totalPrice}</p>
                       </div>
 
                       {booking.status === 'PENDING' && (
@@ -264,35 +268,40 @@ const MyBookings = () => {
         )}
       </div>
 
-      {/* Floating AI Agent Button */}
-      {bookings.filter(b => b.status === 'ACCEPTED').length > 0 && (
-        <button
-          onClick={() => {
-            setShowAIAgent(true);
-            // Use the first ACCEPTED booking
-            const acceptedBookings = bookings.filter(b => b.status === 'ACCEPTED');
-            setSelectedBookingId(acceptedBookings[0]?.id || null);
-          }}
-          className="fixed bottom-6 right-6 bg-gradient-to-r from-airbnb-pink to-red-500 hover:from-red-600 hover:to-red-700 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 z-30 group"
-          title="AI Travel Concierge"
-        >
-          <div className="flex items-center space-x-2">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-            <span className="hidden group-hover:inline-block text-sm font-medium whitespace-nowrap">
-              AI Trip Planner
-            </span>
-          </div>
-        </button>
-      )}
+      {/* Floating AI Agent Button - Only show for ACCEPTED future bookings */}
+      {(() => {
+        const futureBookings = bookings.filter(b => 
+          b.status === 'ACCEPTED' && new Date(b.checkInDate) > new Date()
+        );
+        return futureBookings.length > 0 && (
+          <button
+            onClick={() => {
+              setShowAIAgent(true);
+              setSelectedBookingId(futureBookings[0]?.id || null);
+            }}
+            className="fixed bottom-6 right-6 bg-gradient-to-r from-airbnb-pink to-red-500 hover:from-red-600 hover:to-red-700 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 z-30 group"
+            title="AI Travel Concierge"
+          >
+            <div className="flex items-center space-x-2">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              <span className="hidden group-hover:inline-block text-sm font-medium whitespace-nowrap">
+                AI Trip Planner
+              </span>
+            </div>
+          </button>
+        );
+      })()}
 
       {/* AI Agent Panel */}
       {showAIAgent && (
         <AIAgent 
           onClose={() => setShowAIAgent(false)} 
           bookingId={selectedBookingId}
-          bookings={bookings.filter(b => b.status === 'ACCEPTED')}
+          bookings={bookings.filter(b => 
+            b.status === 'ACCEPTED' && new Date(b.checkInDate) > new Date()
+          )}
           onBookingChange={setSelectedBookingId}
         />
       )}

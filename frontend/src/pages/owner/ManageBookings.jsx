@@ -170,8 +170,8 @@ const ManageBookings = () => {
                   <div className="mb-4 md:mb-0">
                     <div className="h-32 w-48 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
                       {(() => {
-                        // Parse photos if it's a string, or use as is if already an array
-                        let photos = booking.photos;
+                        // Get photos from populated property object
+                        let photos = booking.property?.photos;
                         if (typeof photos === 'string') {
                           try {
                             photos = JSON.parse(photos);
@@ -181,8 +181,8 @@ const ManageBookings = () => {
                         }
                         return photos && photos.length > 0 ? (
                           <img
-                            src={`http://localhost:5002${photos[0]}`}
-                            alt={booking.property_name}
+                            src={`http://localhost:3003${photos[0]}`}
+                            alt={booking.property?.name || 'Property'}
                             className="h-32 w-48 object-cover rounded-lg"
                             onError={(e) => {
                               e.target.parentElement.innerHTML = '<div class="text-4xl">🏠</div>';
@@ -200,9 +200,9 @@ const ManageBookings = () => {
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <h3 className="text-xl font-semibold text-airbnb-dark">
-                          {booking.property_name}
+                          {booking.property?.name || 'Property'}
                         </h3>
-                        <p className="text-airbnb-gray mt-1">Guest: {booking.traveler_name}</p>
+                        <p className="text-airbnb-gray mt-1">Guest: {booking.traveler?.fullName || 'Guest'}</p>
                       </div>
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
@@ -217,7 +217,7 @@ const ManageBookings = () => {
                       <div>
                         <p className="text-sm text-airbnb-gray">Check-in</p>
                         <p className="font-medium text-airbnb-dark">
-                          {new Date(booking.start_date).toLocaleDateString('en-US', {
+                          {new Date(booking.checkInDate).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric',
@@ -227,7 +227,7 @@ const ManageBookings = () => {
                       <div>
                         <p className="text-sm text-airbnb-gray">Check-out</p>
                         <p className="font-medium text-airbnb-dark">
-                          {new Date(booking.end_date).toLocaleDateString('en-US', {
+                          {new Date(booking.checkOutDate).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric',
@@ -243,7 +243,7 @@ const ManageBookings = () => {
                     <div className="flex items-center justify-between pt-4 border-t">
                       <div>
                         <p className="text-sm text-airbnb-gray">Total Price</p>
-                        <p className="text-xl font-bold text-airbnb-dark">${booking.total_price}</p>
+                        <p className="text-xl font-bold text-airbnb-dark">${booking.totalPrice}</p>
                       </div>
 
                       {booking.status === 'PENDING' && (

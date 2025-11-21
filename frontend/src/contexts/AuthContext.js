@@ -71,13 +71,17 @@ export const AuthProvider = ({ children }) => {
 
   const refreshUser = async () => {
     try {
+      console.log('🔄 AuthContext: Refreshing user data...');
       const response = await authAPI.checkAuth();
       if (response.data.success) {
+        console.log('✅ AuthContext: User data refreshed:', response.data.user);
         setUser(response.data.user);
         return { success: true };
       }
+      console.log('⚠️ AuthContext: Refresh failed - no success in response');
       return { success: false };
     } catch (err) {
+      console.error('❌ AuthContext: Refresh error:', err);
       return { success: false };
     }
   };

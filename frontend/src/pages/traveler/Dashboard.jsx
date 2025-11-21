@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../redux/slices/authSlice';
 import { bookingAPI } from '../../services/api';
 import Navbar from '../../components/shared/Navbar';
 import AIAgent from '../../components/shared/AIAgent';
 
 const TravelerDashboard = () => {
-  const { user } = useAuth();
+  const user = useSelector(selectUser);
   const [bookings, setBookings] = useState({ pending: [], accepted: [], cancelled: [] });
   const [loading, setLoading] = useState(true);
   const [showAIAgent, setShowAIAgent] = useState(false);
@@ -130,32 +131,69 @@ const TravelerDashboard = () => {
             <div className="space-y-4">
               {[...bookings.pending, ...bookings.accepted].slice(0, 5).map((booking) => (
                 <div key={booking.id} className="border border-gray-200 rounded-lg p-4 hover:border-airbnb-pink transition">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-semibold text-airbnb-dark">
-                        {booking.property_name}
-                      </h3>
-                      <p className="text-sm text-airbnb-gray mt-1">
-                        📍 {booking.location}
-                      </p>
-                      <p className="text-sm text-airbnb-gray mt-1">
-                        📅 {new Date(booking.start_date).toLocaleDateString()} - {new Date(booking.end_date).toLocaleDateString()}
-                      </p>
-                      <p className="text-sm text-airbnb-gray mt-1">
-                        👥 {booking.guests} guests • ${booking.total_price}
-                      </p>
+                  <div className="flex items-start space-x-4">
+                    {/* Property Image */}
+                    <Link to={`/traveler/property/${booking.propertyId}`}>
+                      <div className="h-20 w-32 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
+                        {(() => {
+                          // Get photos from populated property object
+                          let photos = booking.property?.photos;
+                          if (typeof photos === 'string') {
+                            try {
+                              photos = JSON.parse(photos);
+                            } catch (e) {
+                              photos = [];
+                            }
+                          }
+                          return photos && photos.length > 0 ? (
+                            <img
+                              src={`http://localhost:3003${photos[0]}`}
+                              alt={booking.property?.name || 'Property'}
+                              className="h-20 w-32 object-cover"
+                              onError={(e) => {
+                                e.target.parentElement.innerHTML = '<div class="text-2xl">🏠</div>';
+                              }}
+                            />
+                          ) : (
+                            <div className="text-2xl">🏠</div>
+                          );
+                        })()}
+                      </div>
+                    </Link>
+
+                    {/* Booking Details */}
+                    <div className="flex-1 flex justify-between items-start">
+                      <div>
+                        <Link 
+                          to={`/traveler/property/${booking.propertyId}`}
+                          className="font-semibold text-airbnb-dark hover:text-airbnb-pink transition"
+                        >
+                          {booking.property?.name || 'Property'}
+                        </Link>
+                        <p className="text-sm text-airbnb-gray mt-1">
+                          📍 {booking.property?.city && booking.property?.state 
+                            ? `${booking.property.city}, ${booking.property.state}` 
+                            : 'Location'}
+                        </p>
+                        <p className="text-sm text-airbnb-gray mt-1">
+                          📅 {new Date(booking.checkInDate).toLocaleDateString()} - {new Date(booking.checkOutDate).toLocaleDateString()}
+                        </p>
+                        <p className="text-sm text-airbnb-gray mt-1">
+                          👥 {booking.guests} guests • ${booking.totalPrice}
+                        </p>
+                      </div>
+                      <span
+                        className={`px-3 py-1 text-xs font-medium rounded-full ${
+                          booking.status === 'PENDING'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : booking.status === 'ACCEPTED'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {booking.status}
+                      </span>
                     </div>
-                    <span
-                      className={`px-3 py-1 text-xs font-medium rounded-full ${
-                        booking.status === 'PENDING'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : booking.status === 'ACCEPTED'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {booking.status}
-                    </span>
                   </div>
                 </div>
               ))}
@@ -164,33 +202,40 @@ const TravelerDashboard = () => {
         </div>
       </div>
 
-      {/* AI Agent Button - Only show if there are ACCEPTED bookings */}
-      {bookings.accepted.length > 0 && (
-        <button
-          onClick={() => {
-            setShowAIAgent(true);
-            setSelectedBookingId(bookings.accepted[0]?.id || null);
-          }}
-          className="fixed bottom-6 right-6 bg-gradient-to-r from-airbnb-pink to-red-500 hover:from-red-600 hover:to-red-700 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 z-30 group"
-          title="AI Travel Concierge"
-        >
-          <div className="flex items-center space-x-2">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-            <span className="hidden group-hover:inline-block text-sm font-medium whitespace-nowrap">
-              AI Trip Planner
-            </span>
-          </div>
-        </button>
-      )}
+      {/* AI Agent Button - Only show if there are ACCEPTED future bookings */}
+      {(() => {
+        const futureBookings = bookings.accepted.filter(booking => 
+          new Date(booking.checkInDate) > new Date()
+        );
+        return futureBookings.length > 0 && (
+          <button
+            onClick={() => {
+              setShowAIAgent(true);
+              setSelectedBookingId(futureBookings[0]?.id || null);
+            }}
+            className="fixed bottom-6 right-6 bg-gradient-to-r from-airbnb-pink to-red-500 hover:from-red-600 hover:to-red-700 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 z-30 group"
+            title="AI Travel Concierge"
+          >
+            <div className="flex items-center space-x-2">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              <span className="hidden group-hover:inline-block text-sm font-medium whitespace-nowrap">
+                AI Trip Planner
+              </span>
+            </div>
+          </button>
+        );
+      })()}
 
       {/* AI Agent Panel */}
       {showAIAgent && (
         <AIAgent 
           onClose={() => setShowAIAgent(false)} 
           bookingId={selectedBookingId}
-          bookings={bookings.accepted}
+          bookings={bookings.accepted.filter(booking => 
+            new Date(booking.checkInDate) > new Date()
+          )}
           onBookingChange={setSelectedBookingId}
         />
       )}

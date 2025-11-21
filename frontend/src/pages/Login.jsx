@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser, selectAuthLoading, selectAuthError, clearError } from '../redux/slices/authSlice';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const dispatch = useDispatch();
+  const loading = useSelector(selectAuthLoading);
+  const error = useSelector(selectAuthError);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
+    dispatch(clearError());
 
-    const result = await login(email, password);
-    setLoading(false);
-
-    if (!result.success) {
-      setError(result.message);
+    try {
+      await dispatch(loginUser({ email, password })).unwrap();
+      // If successful, App.js will handle redirect
+    } catch (err) {
+      // Error is handled by Redux state
+      console.error('Login failed:', err);
     }
-    // If successful, App.js will handle redirect
   };
 
   return (

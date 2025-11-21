@@ -9,8 +9,12 @@ const CreateProperty = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [formData, setFormData] = useState({
     name: '',
-    location: '',
-    type: 'Apartment',
+    city: '',
+    state: '',
+    country: 'USA',
+    zipcode: '',
+    address: '',
+    type: 'apartment',
     price_per_night: '',
     bedrooms: '',
     bathrooms: '',
@@ -20,7 +24,14 @@ const CreateProperty = () => {
   });
   const [photos, setPhotos] = useState([]);
 
-  const propertyTypes = ['Apartment', 'House', 'Villa', 'Condo', 'Cabin', 'Cottage', 'Other'];
+  const propertyTypes = [
+    { value: 'apartment', label: 'Apartment' },
+    { value: 'house', label: 'House' },
+    { value: 'villa', label: 'Villa' },
+    { value: 'condo', label: 'Condo' },
+    { value: 'cabin', label: 'Cabin' },
+    { value: 'other', label: 'Other' }
+  ];
   const amenitiesList = [
     'WiFi',
     'Kitchen',
@@ -69,12 +80,16 @@ const CreateProperty = () => {
     try {
       const propertyData = new FormData();
       propertyData.append('name', formData.name);
-      propertyData.append('location', formData.location);
-      propertyData.append('type', formData.type);
-      propertyData.append('price_per_night', formData.price_per_night);
+      propertyData.append('city', formData.city);
+      propertyData.append('state', formData.state);
+      propertyData.append('country', formData.country);
+      propertyData.append('zipcode', formData.zipcode);
+      propertyData.append('address', formData.address);
+      propertyData.append('propertyType', formData.type);
+      propertyData.append('pricePerNight', formData.price_per_night);
       propertyData.append('bedrooms', formData.bedrooms);
       propertyData.append('bathrooms', formData.bathrooms);
-      propertyData.append('max_guests', formData.max_guests);
+      propertyData.append('maxGuests', formData.max_guests);
       propertyData.append('description', formData.description);
       propertyData.append('amenities', JSON.stringify(formData.amenities));
 
@@ -153,17 +168,75 @@ const CreateProperty = () => {
                   />
                 </div>
 
-                <div className="md:col-span-2">
+                <div>
                   <label className="block text-sm font-medium text-airbnb-dark mb-2">
-                    Location *
+                    City *
                   </label>
                   <input
                     type="text"
-                    name="location"
-                    value={formData.location}
+                    name="city"
+                    value={formData.city}
                     onChange={handleChange}
                     required
-                    placeholder="Los Angeles, CA"
+                    placeholder="e.g., Miami"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-airbnb-dark mb-2">
+                    State/Province *
+                  </label>
+                  <input
+                    type="text"
+                    name="state"
+                    value={formData.state}
+                    onChange={handleChange}
+                    required
+                    placeholder="e.g., FL"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-airbnb-dark mb-2">
+                    Country *
+                  </label>
+                  <input
+                    type="text"
+                    name="country"
+                    value={formData.country}
+                    onChange={handleChange}
+                    required
+                    placeholder="e.g., USA"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-airbnb-dark mb-2">
+                    Zip Code
+                  </label>
+                  <input
+                    type="text"
+                    name="zipcode"
+                    value={formData.zipcode}
+                    onChange={handleChange}
+                    placeholder="e.g., 33131"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-airbnb-dark mb-2">
+                    Street Address
+                  </label>
+                  <input
+                    type="text"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    placeholder="e.g., 100 Biscayne Blvd"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent"
                   />
                 </div>
@@ -180,8 +253,8 @@ const CreateProperty = () => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent"
                   >
                     {propertyTypes.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
+                      <option key={type.value} value={type.value}>
+                        {type.label}
                       </option>
                     ))}
                   </select>
@@ -253,11 +326,12 @@ const CreateProperty = () => {
 
             {/* Description */}
             <div>
-              <h2 className="text-xl font-semibold text-airbnb-dark mb-4">Description</h2>
+              <h2 className="text-xl font-semibold text-airbnb-dark mb-4">Description *</h2>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
+                required
                 rows="6"
                 placeholder="Describe your property, its unique features, nearby attractions, and what makes it special..."
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent"

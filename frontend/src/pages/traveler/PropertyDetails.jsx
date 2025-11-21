@@ -45,7 +45,7 @@ const PropertyDetails = () => {
     const start = new Date(bookingData.start_date);
     const end = new Date(bookingData.end_date);
     const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-    return nights * property.price_per_night;
+    return nights * property.pricePerNight;
   };
 
   const handleBooking = async (e) => {
@@ -56,11 +56,11 @@ const PropertyDetails = () => {
     try {
       const total = calculateTotal();
       const response = await bookingAPI.create({
-        property_id: property.id,
-        start_date: bookingData.start_date,
-        end_date: bookingData.end_date,
+        propertyId: property.id,
+        checkInDate: bookingData.start_date,
+        checkOutDate: bookingData.end_date,
         guests: parseInt(bookingData.guests),
-        total_price: total,
+        totalPrice: total,
       });
 
       if (response.data.success) {
@@ -138,7 +138,7 @@ const PropertyDetails = () => {
             {property.photos && property.photos.length > 0 ? (
               <>
                 <img
-                  src={`http://localhost:5002${property.photos[0]}`}
+                  src={`http://localhost:3003${property.photos[0]}`}
                   alt={property.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
@@ -157,7 +157,7 @@ const PropertyDetails = () => {
               <div key={idx} className="h-44 bg-gray-200 rounded-xl overflow-hidden relative">
                 {photo ? (
                   <img
-                    src={`http://localhost:5002${photo}`}
+                    src={`http://localhost:3003${photo}`}
                     alt={`${property.name} ${idx + 2}`}
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -179,7 +179,11 @@ const PropertyDetails = () => {
           <div className="lg:col-span-2 space-y-6">
             <div>
               <h1 className="text-3xl font-bold text-airbnb-dark">{property.name}</h1>
-              <p className="text-airbnb-gray mt-2">📍 {property.location}</p>
+              <p className="text-airbnb-gray mt-2">
+                📍 {property.city && property.state 
+                  ? `${property.city}, ${property.state}${property.zipcode ? ' ' + property.zipcode : ''}` 
+                  : 'Location not available'}
+              </p>
               <div className="flex items-center space-x-4 mt-2 text-airbnb-gray">
                 <span>{property.type}</span>
                 <span>•</span>
@@ -187,7 +191,7 @@ const PropertyDetails = () => {
                 <span>•</span>
                 <span>{property.bathrooms} bathrooms</span>
                 <span>•</span>
-                <span>Up to {property.max_guests} guests</span>
+                <span>Up to {property.maxGuests} guests</span>
               </div>
             </div>
 
@@ -221,7 +225,7 @@ const PropertyDetails = () => {
               <div className="flex items-baseline justify-between mb-6">
                 <div>
                   <span className="text-3xl font-bold text-airbnb-dark">
-                    ${property.price_per_night}
+                    ${property.pricePerNight}
                   </span>
                   <span className="text-airbnb-gray ml-2">per night</span>
                 </div>
@@ -281,7 +285,7 @@ const PropertyDetails = () => {
                     onChange={handleBookingChange}
                     required
                     min="1"
-                    max={property.max_guests}
+                    max={property.maxGuests}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent"
                   />
                 </div>
@@ -290,7 +294,7 @@ const PropertyDetails = () => {
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="flex justify-between text-sm text-airbnb-gray mb-2">
                       <span>
-                        ${property.price_per_night} x{' '}
+                        ${property.pricePerNight} x{' '}
                         {Math.ceil(
                           (new Date(bookingData.end_date) - new Date(bookingData.start_date)) /
                             (1000 * 60 * 60 * 24)

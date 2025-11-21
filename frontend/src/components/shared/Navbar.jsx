@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { logoutUser, selectUser, selectIsTraveler } from '../../redux/slices/authSlice';
 
 const Navbar = () => {
-  const { user, logout, isTraveler } = useAuth();
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser);
+  const isTraveler = useSelector(selectIsTraveler);
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
-    await logout();
+    await dispatch(logoutUser());
     navigate('/login');
   };
 
@@ -74,7 +77,7 @@ const Navbar = () => {
               >
                 {user?.profile_picture ? (
                   <img
-                    src={`http://localhost:5002${user.profile_picture}`}
+                    src={`http://localhost:${user.role === 'traveler' ? 3001 : 3002}${user.profile_picture}`}
                     alt={user.name}
                     className="w-8 h-8 rounded-full object-cover"
                     onError={(e) => {

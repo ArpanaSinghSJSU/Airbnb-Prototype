@@ -82,11 +82,11 @@ const History = () => {
                 <div className="flex flex-col md:flex-row md:items-center md:space-x-6">
                   {/* Property Image */}
                   <div className="mb-4 md:mb-0">
-                    <Link to={`/traveler/property/${trip.property_id}`}>
+                    <Link to={`/traveler/property/${trip.propertyId}`}>
                       <div className="h-32 w-48 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
                         {(() => {
-                          // Parse photos if it's a string, or use as is if already an array
-                          let photos = trip.photos;
+                          // Get photos from populated property object
+                          let photos = trip.property?.photos;
                           if (typeof photos === 'string') {
                             try {
                               photos = JSON.parse(photos);
@@ -96,8 +96,8 @@ const History = () => {
                           }
                           return photos && photos.length > 0 ? (
                             <img
-                              src={`http://localhost:5002${photos[0]}`}
-                              alt={trip.property_name}
+                              src={`http://localhost:3003${photos[0]}`}
+                              alt={trip.property?.name || 'Property'}
                               className="h-32 w-48 object-cover rounded-lg"
                               onError={(e) => {
                                 e.target.parentElement.innerHTML = '<div class="text-4xl">🏠</div>';
@@ -115,23 +115,27 @@ const History = () => {
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
                       <Link
-                        to={`/traveler/property/${trip.property_id}`}
+                        to={`/traveler/property/${trip.propertyId}`}
                         className="text-xl font-semibold text-airbnb-dark hover:text-airbnb-pink transition"
                       >
-                        {trip.property_name}
+                        {trip.property?.name || 'Property'}
                       </Link>
                       <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200">
                         ✓ COMPLETED
                       </span>
                     </div>
 
-                    <p className="text-airbnb-gray mb-3">📍 {trip.location}</p>
+                    <p className="text-airbnb-gray mb-3">
+                      📍 {trip.property?.city && trip.property?.state 
+                        ? `${trip.property.city}, ${trip.property.state}` 
+                        : 'Location not available'}
+                    </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                       <div>
                         <p className="text-sm text-airbnb-gray">Check-in</p>
                         <p className="font-medium text-airbnb-dark">
-                          {new Date(trip.start_date).toLocaleDateString('en-US', {
+                          {new Date(trip.checkInDate).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric',
@@ -141,7 +145,7 @@ const History = () => {
                       <div>
                         <p className="text-sm text-airbnb-gray">Check-out</p>
                         <p className="font-medium text-airbnb-dark">
-                          {new Date(trip.end_date).toLocaleDateString('en-US', {
+                          {new Date(trip.checkOutDate).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric',
@@ -151,7 +155,7 @@ const History = () => {
                       <div>
                         <p className="text-sm text-airbnb-gray">Duration</p>
                         <p className="font-medium text-airbnb-dark">
-                          {calculateNights(trip.start_date, trip.end_date)} nights
+                          {calculateNights(trip.checkInDate, trip.checkOutDate)} nights
                         </p>
                       </div>
                       <div>
@@ -163,7 +167,7 @@ const History = () => {
                     <div className="flex items-center justify-between pt-4 border-t">
                       <div>
                         <p className="text-sm text-airbnb-gray">Total Paid</p>
-                        <p className="text-xl font-bold text-airbnb-dark">${trip.total_price}</p>
+                        <p className="text-xl font-bold text-airbnb-dark">${trip.totalPrice}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-airbnb-gray">Booked on</p>

@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gotour-config
+  namespace: gotour
+data:
+  # MongoDB Configuration
+  MONGODB_URI: "mongodb://mongodb-service:27017/gotour_db"
+  
+  # Service Ports
+  TRAVELER_PORT: "3001"
+  OWNER_PORT: "3002"
+  PROPERTY_PORT: "3003"
+  BOOKING_PORT: "3004"
+  AI_AGENT_PORT: "8000"
+  AI_AGENT_HOST: "0.0.0.0"
+  
+  # Service URLs (internal K8s DNS)
+  TRAVELER_SERVICE_URL: "http://traveler-service:3001"
+  OWNER_SERVICE_URL: "http://owner-service:3002"
+  PROPERTY_SERVICE_URL: "http://property-service:3003"
+  BOOKING_SERVICE_URL: "http://booking-service:3004"
+  AI_AGENT_URL: "http://ai-agent-service:8000"
+  
+  # Frontend Configuration
+  FRONTEND_URL: "http://frontend-service:3000"
+  REACT_APP_TRAVELER_SERVICE_URL: "http://traveler-service:3001"
+  REACT_APP_OWNER_SERVICE_URL: "http://owner-service:3002"
+  REACT_APP_PROPERTY_SERVICE_URL: "http://property-service:3003"
+  REACT_APP_BOOKING_SERVICE_URL: "http://booking-service:3004"
+  REACT_APP_AI_AGENT_URL: "http://ai-agent-service:8000"
+  
+  # Kafka Configuration
+  KAFKA_BROKER_URL: "kafka-service:9092"
+  KAFKA_BROKERS: "kafka-service:9092"
+  
+  # JWT Configuration
+  JWT_EXPIRE: "7d"
+  
+  # AI Agent Configuration
+  CORS_ORIGINS: "http://localhost:3000,http://frontend-service:3000"
+  
+  # Node Environment
+  NODE_ENV: "production"
+

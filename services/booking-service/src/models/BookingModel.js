@@ -122,12 +122,12 @@ bookingSchema.statics.findByOwner = async function(ownerId, status = null) {
   if (status) {
     query.status = status;
   }
-  return this.find(query).populate(['traveler', 'property']);
+  return this.find(query).populate(['travelerId', 'propertyId']);
 };
 
 // Static method to check availability
-bookingSchema.statics.checkAvailability = async function(propertyId, checkIn, checkOut) {
-  const overlappingBookings = await this.find({
+bookingSchema.statics.checkAvailability = async function(propertyId, checkIn, checkOut, excludeBookingId = null) {
+  const query = {
     propertyId,
     status: { $in: ['PENDING', 'ACCEPTED'] },
     $or: [
@@ -144,7 +144,14 @@ bookingSchema.statics.checkAvailability = async function(propertyId, checkIn, ch
         checkOutDate: { $lte: checkOut }
       }
     ]
-  });
+  };
+  
+  // Exclude the current booking if provided (used when accepting a booking)
+  if (excludeBookingId) {
+    query._id = { $ne: excludeBookingId };
+  }
+  
+  const overlappingBookings = await this.find(query);
   
   return overlappingBookings.length === 0;
 };

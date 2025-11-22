@@ -1,7 +1,7 @@
 # GoTour Airbnb Prototype - Makefile
 # Simplified commands for development
 
-.PHONY: help setup server frontend stop-all stop-backend stop-frontend health logs clean seed
+.PHONY: help setup server frontend stop-all stop-backend stop-frontend health logs clean seed kafka-status kafka-topics kafka-logs kafka-test k8s-deploy k8s-status k8s-logs k8s-cleanup k8s-test
 
 # Default target - show help
 help:
@@ -29,6 +29,19 @@ help:
 	@echo ""
 	@echo "🔧 Utilities:"
 	@echo "  make clean           - Clean Docker cache"
+	@echo ""
+	@echo "📨 Kafka:"
+	@echo "  make kafka-status    - Check Kafka & Zookeeper status"
+	@echo "  make kafka-topics    - List all Kafka topics"
+	@echo "  make kafka-logs      - View Kafka logs (all services)"
+	@echo "  make kafka-test      - Complete Kafka flow test guide"
+	@echo ""
+	@echo "☸️  Kubernetes:"
+	@echo "  make k8s-deploy      - Deploy to Minikube"
+	@echo "  make k8s-status      - Check K8s pods & services"
+	@echo "  make k8s-logs        - View K8s logs"
+	@echo "  make k8s-cleanup     - Remove all K8s resources"
+	@echo "  make k8s-test        - Test K8s deployment"
 	@echo ""
 
 # ============================================
@@ -131,6 +144,11 @@ server:
 	@echo "  📊 MongoDB:            mongodb://localhost:27017"
 	@echo "  🌐 Mongo Express:      http://localhost:8081 (admin/admin123)"
 	@echo ""
+	@echo "📨 Kafka:"
+	@echo "  📨 Kafka Broker:       http://localhost:9092"
+	@echo "  🗂️  Zookeeper:          http://localhost:2181"
+	@echo "  💡 Run 'make kafka-status' for Kafka details"
+	@echo ""
 	@echo "🎨 Next step: Run 'make frontend' to start the React app"
 	@echo ""
 
@@ -223,6 +241,16 @@ health:
 	else \
 		echo "❌ MongoDB           - Not running"; \
 	fi
+	@if docker ps | grep -q gotour-kafka; then \
+		echo "✅ Kafka             - http://localhost:9092"; \
+	else \
+		echo "❌ Kafka             - Not running"; \
+	fi
+	@if docker ps | grep -q gotour-zookeeper; then \
+		echo "✅ Zookeeper         - http://localhost:2181"; \
+	else \
+		echo "❌ Zookeeper         - Not running"; \
+	fi
 
 # ============================================
 # MONITORING & LOGS
@@ -293,7 +321,22 @@ clean-all:
 
 db-shell:
 	@echo "🗄️  Opening MongoDB shell..."
-	@echo "Use: db.bookings.find().pretty()"
+	@echo ""
+	@# Check if MongoDB is running
+	@if ! docker ps | grep -q gotour-mongodb; then \
+		echo "❌ MongoDB is not running!"; \
+		echo ""; \
+		echo "Starting MongoDB..."; \
+		docker-compose up -d mongodb; \
+		echo "⏳ Waiting for MongoDB to initialize..."; \
+		sleep 5; \
+		echo "✅ MongoDB started"; \
+		echo ""; \
+	fi
+	@echo "📊 Useful commands:"
+	@echo "  db.users.find().pretty()"
+	@echo "  db.properties.find().pretty()"
+	@echo "  db.bookings.find().pretty()"
 	@echo ""
 	docker-compose exec mongodb mongosh "mongodb://admin:admin123@localhost:27017/gotour_db?authSource=admin"
 
@@ -351,3 +394,273 @@ check-env:
 	else \
 		echo "✅ TAVILY_API_KEY is set"; \
 	fi
+
+# ============================================
+# KAFKA COMMANDS (PHASE 4)
+# ============================================
+
+kafka-status:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║              📨 Kafka & Zookeeper Status                   ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@# Check Zookeeper
+	@if docker ps | grep -q gotour-zookeeper; then \
+		echo "✅ Zookeeper is running"; \
+		echo "   Container: gotour-zookeeper"; \
+		echo "   Port: 2181"; \
+	else \
+		echo "❌ Zookeeper is not running"; \
+	fi
+	@echo ""
+	@# Check Kafka
+	@if docker ps | grep -q gotour-kafka; then \
+		echo "✅ Kafka is running"; \
+		echo "   Container: gotour-kafka"; \
+		echo "   Port: 9092"; \
+	else \
+		echo "❌ Kafka is not running"; \
+	fi
+	@echo ""
+	@# Check Kafka health
+	@if docker ps | grep -q gotour-kafka; then \
+		echo "🔍 Checking Kafka broker health..."; \
+		docker exec gotour-kafka kafka-broker-api-versions --bootstrap-server localhost:9092 > /dev/null 2>&1 && \
+		echo "✅ Kafka broker is healthy" || \
+		echo "⚠️  Kafka broker is not responding"; \
+	fi
+	@echo ""
+	@# Show consumer groups
+	@if docker ps | grep -q gotour-kafka; then \
+		echo "👥 Active Consumer Groups:"; \
+		docker exec gotour-kafka kafka-consumer-groups --bootstrap-server localhost:9092 --list 2>/dev/null || echo "   (none yet)"; \
+	fi
+	@echo ""
+
+kafka-topics:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║                  📋 Kafka Topics                           ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@if ! docker ps | grep -q gotour-kafka; then \
+		echo "❌ Kafka is not running!"; \
+		echo "Start services: make server"; \
+		exit 1; \
+	fi
+	@echo "📝 Topics List:"
+	@echo "───────────────────────────────────────────────────────────"
+	@docker exec gotour-kafka kafka-topics --bootstrap-server localhost:9092 --list 2>/dev/null || echo "No topics found"
+	@echo ""
+	@echo "📊 Topic Details:"
+	@echo "───────────────────────────────────────────────────────────"
+	@docker exec gotour-kafka kafka-topics --bootstrap-server localhost:9092 --describe 2>/dev/null || echo "No topics to describe"
+	@echo ""
+
+kafka-logs:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║              📨 Kafka Service Logs (Live)                  ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "🔍 Watching Kafka-related logs from all services..."
+	@echo "   - Booking Service (Producer + Consumer)"
+	@echo "   - Traveler Service (Consumer)"
+	@echo "   - Owner Service (Consumer)"
+	@echo "   - Kafka Broker"
+	@echo ""
+	@echo "💡 Look for:"
+	@echo "   📤 'Published to' - Message sent"
+	@echo "   📩 'Received message from' - Message received"
+	@echo "   ✅ 'Kafka Producer connected'"
+	@echo "   ✅ 'Kafka Consumer connected'"
+	@echo ""
+	@echo "Press Ctrl+C to exit"
+	@echo "═══════════════════════════════════════════════════════════"
+	@echo ""
+	@docker-compose logs -f booking-service traveler-service owner-service kafka 2>&1 | grep -i "kafka\|📤\|📩\|topic\|consumer\|producer" --line-buffered --color=always
+
+kafka-logs-booking:
+	@echo "📅 Booking Service Kafka logs:"
+	@docker-compose logs -f booking-service | grep -i "kafka\|📤\|📩" --line-buffered --color=always
+
+kafka-logs-traveler:
+	@echo "🧑 Traveler Service Kafka logs:"
+	@docker-compose logs -f traveler-service | grep -i "kafka\|📤\|📩" --line-buffered --color=always
+
+kafka-logs-owner:
+	@echo "🏠 Owner Service Kafka logs:"
+	@docker-compose logs -f owner-service | grep -i "kafka\|📤\|📩" --line-buffered --color=always
+
+kafka-logs-broker:
+	@echo "📨 Kafka Broker logs:"
+	@docker logs -f gotour-kafka
+
+kafka-monitor:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║          📊 Kafka Topic Monitor (owner-notifications)     ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "🔍 Consuming messages from owner-notifications topic..."
+	@echo "This will show all booking creation events."
+	@echo ""
+	@echo "Press Ctrl+C to exit"
+	@echo "═══════════════════════════════════════════════════════════"
+	@echo ""
+	@docker exec -it gotour-kafka kafka-console-consumer \
+		--bootstrap-server localhost:9092 \
+		--topic owner-notifications \
+		--from-beginning \
+		--property print.timestamp=true \
+		--property print.key=true
+
+kafka-monitor-status:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║          📊 Kafka Topic Monitor (booking-status-updates)  ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "🔍 Consuming messages from booking-status-updates topic..."
+	@echo "This will show all booking status changes (accept/cancel)."
+	@echo ""
+	@echo "Press Ctrl+C to exit"
+	@echo "═══════════════════════════════════════════════════════════"
+	@echo ""
+	@docker exec -it gotour-kafka kafka-console-consumer \
+		--bootstrap-server localhost:9092 \
+		--topic booking-status-updates \
+		--from-beginning \
+		--property print.timestamp=true \
+		--property print.key=true
+
+kafka-test:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║              🧪 Kafka Flow Testing Guide                   ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "📋 STEP-BY-STEP KAFKA TESTING:"
+	@echo "═══════════════════════════════════════════════════════════"
+	@echo ""
+	@echo "✅ Step 1: Verify Kafka is Running"
+	@echo "   make kafka-status"
+	@echo ""
+	@echo "✅ Step 2: Check Topics Exist"
+	@echo "   make kafka-topics"
+	@echo "   Expected: booking-requests, owner-notifications, booking-status-updates"
+	@echo ""
+	@echo "✅ Step 3: Open Kafka Logs (in 3 terminals)"
+	@echo "   Terminal 1: make kafka-logs-booking"
+	@echo "   Terminal 2: make kafka-logs-owner"
+	@echo "   Terminal 3: make kafka-logs-traveler"
+	@echo ""
+	@echo "✅ Step 4: Test Booking Creation Flow"
+	@echo "   a) Open frontend: http://localhost:3000"
+	@echo "   b) Login as traveler: john.traveler@example.com / password123"
+	@echo "   c) Create a booking"
+	@echo "   d) Watch logs for:"
+	@echo "      - Booking Service: '📤 Published to owner-notifications'"
+	@echo "      - Owner Service: '📩 Received message from owner-notifications'"
+	@echo ""
+	@echo "✅ Step 5: Test Booking Acceptance Flow"
+	@echo "   a) Login as owner: robert.owner@example.com / password123"
+	@echo "   b) Go to 'Manage Bookings'"
+	@echo "   c) Accept a pending booking"
+	@echo "   d) Watch logs for:"
+	@echo "      - Booking Service: '📤 Published BOOKING_ACCEPTED event'"
+	@echo "      - Traveler Service: '📩 Received message from booking-status-updates'"
+	@echo ""
+	@echo "✅ Step 6: Monitor Topics (optional)"
+	@echo "   make kafka-monitor           # Watch booking creation events"
+	@echo "   make kafka-monitor-status    # Watch status updates"
+	@echo ""
+	@echo "═══════════════════════════════════════════════════════════"
+	@echo ""
+	@echo "📚 Full Documentation:"
+	@echo "   - KAFKA_BOOKING_FLOW.md      - Complete flow explanation"
+	@echo "   - KAFKA_TESTING_GUIDE.md     - Detailed testing scenarios"
+	@echo "   - KAFKA_QUICKSTART.md        - Quick start guide"
+	@echo ""
+	@echo "💡 TIP: Run 'make kafka-status' to verify Kafka is healthy!"
+	@echo ""
+
+kafka-reset:
+	@echo "⚠️  WARNING: This will reset ALL Kafka data!"
+	@echo "Press Ctrl+C to cancel, or wait 5 seconds to continue..."
+	@sleep 5
+	@echo ""
+	@echo "🔄 Resetting Kafka..."
+	@docker-compose restart zookeeper kafka
+	@echo "⏳ Waiting for Kafka to restart..."
+	@sleep 10
+	@echo "✅ Kafka reset complete!"
+	@echo ""
+	@echo "Run 'make kafka-topics' to see topics recreated on next service start."
+
+# ============================================
+# 7. KUBERNETES COMMANDS
+# ============================================
+
+k8s-deploy:
+	@echo "☸️  Deploying to Kubernetes (Minikube)..."
+	@chmod +x k8s/deploy.sh
+	@./k8s/deploy.sh
+
+k8s-status:
+	@echo "☸️  Kubernetes Status"
+	@echo "══════════════════════════════════════════════════════════"
+	@echo ""
+	@echo "📦 Pods:"
+	@kubectl get pods -n gotour 2>/dev/null || echo "❌ No pods found. Run 'make k8s-deploy' first"
+	@echo ""
+	@echo "🌐 Services:"
+	@kubectl get services -n gotour 2>/dev/null || echo "❌ No services found"
+	@echo ""
+	@echo "📈 HPAs:"
+	@kubectl get hpa -n gotour 2>/dev/null || echo "❌ No HPAs found"
+	@echo ""
+	@echo "💾 PVCs:"
+	@kubectl get pvc -n gotour 2>/dev/null || echo "❌ No PVCs found"
+
+k8s-logs:
+	@echo "☸️  Select a service to view logs:"
+	@echo "1) traveler-service"
+	@echo "2) owner-service"
+	@echo "3) property-service"
+	@echo "4) booking-service"
+	@echo "5) ai-agent-service"
+	@echo "6) frontend"
+	@echo "7) mongodb"
+	@echo "8) kafka"
+	@read -p "Enter choice (1-8): " choice; \
+	case $$choice in \
+		1) kubectl logs -f deployment/traveler-service -n gotour ;; \
+		2) kubectl logs -f deployment/owner-service -n gotour ;; \
+		3) kubectl logs -f deployment/property-service -n gotour ;; \
+		4) kubectl logs -f deployment/booking-service -n gotour ;; \
+		5) kubectl logs -f deployment/ai-agent-service -n gotour ;; \
+		6) kubectl logs -f deployment/frontend -n gotour ;; \
+		7) kubectl logs -f statefulset/mongodb -n gotour ;; \
+		8) kubectl logs -f statefulset/kafka -n gotour ;; \
+		*) echo "Invalid choice" ;; \
+	esac
+
+k8s-cleanup:
+	@echo "🧹 Cleaning up Kubernetes resources..."
+	@chmod +x k8s/cleanup.sh
+	@./k8s/cleanup.sh
+
+k8s-test:
+	@echo "🧪 Testing Kubernetes Deployment"
+	@echo "══════════════════════════════════════════════════════════"
+	@echo ""
+	@echo "1️⃣  Getting frontend URL..."
+	@minikube service frontend-service -n gotour --url 2>/dev/null || echo "❌ Frontend not accessible"
+	@echo ""
+	@echo "2️⃣  Testing health endpoints..."
+	@kubectl exec -it deployment/traveler-service -n gotour -- curl -s http://localhost:3001/health 2>/dev/null || echo "❌ Traveler service not healthy"
+	@kubectl exec -it deployment/booking-service -n gotour -- curl -s http://localhost:3004/health 2>/dev/null || echo "❌ Booking service not healthy"
+	@echo ""
+	@echo "3️⃣  Testing MongoDB..."
+	@kubectl exec -it mongodb-0 -n gotour -- mongosh --eval "db.adminCommand('ping')" 2>/dev/null || echo "❌ MongoDB not accessible"
+	@echo ""
+	@echo "4️⃣  Testing Kafka..."
+	@kubectl exec -it kafka-0 -n gotour -- kafka-topics --bootstrap-server localhost:9092 --list 2>/dev/null || echo "❌ Kafka not accessible"
+	@echo ""
+	@echo "✅ Test complete! Check output above for any errors."

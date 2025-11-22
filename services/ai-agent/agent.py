@@ -386,7 +386,7 @@ Format your response as a structured JSON-like output that I can parse."""
         tips.append("Download offline maps in case of limited connectivity.")
         
         return tips
-    
+
     def answer_query(self, query: str, booking_context=None, preferences: Dict = None) -> str:
         """
         Answer a specific travel question using Tavily search and LLM

@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: property-service
+  namespace: gotour
+  labels:
+    app: property-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3003
+    targetPort: 3003
+    name: http
+  selector:
+    app: property-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: property-service
+  namespace: gotour
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: property-service
+  template:
+    metadata:
+      labels:
+        app: property-service
+    spec:
+      containers:
+      - name: property-service
+        image: airbnb-prototype-property-service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3003
+          name: http
+        env:
+        - name: PROPERTY_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: gotour-config
+              key: PROPERTY_PORT
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: gotour-config
+              key: NODE_ENV
+        - name: MONGODB_URI
+          valueFrom:
+            configMapKeyRef:
+              name: gotour-config
+              key: MONGODB_URI
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: gotour-secrets
+              key: JWT_SECRET
+        - name: JWT_EXPIRE
+          valueFrom:
+            configMapKeyRef:
+              name: gotour-config
+              key: JWT_EXPIRE
+        - name: FRONTEND_URL
+          valueFrom:
+            configMapKeyRef:
+              name: gotour-config
+              key: FRONTEND_URL
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3003
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3003
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 5
+

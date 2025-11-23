@@ -671,28 +671,7 @@ Thread Groups:
 
 ---
 
-### Phase 5: ~~Kubernetes Local Deployment~~ (SKIPPED)
-**Status**: ⏭️ **SKIPPED - Going directly to AWS EKS**
-
-**Rationale**: 
-- Minikube local testing adds extra setup time
-- AWS EKS provides the production environment needed for final testing
-- K8s manifests can be tested directly on AWS
-- Saves ~3 days of development time
-
-**What we'll skip**:
-- ❌ Minikube installation and setup
-- ❌ Local Kubernetes cluster testing
-- ❌ Intermediate debugging on local environment
-
-**What we'll do instead**:
-- ✅ Create K8s manifests (same as planned)
-- ✅ Test Docker Compose locally (from Phase 3)
-- ✅ Deploy directly to AWS EKS for Kubernetes testing
-
----
-
-### Phase 6: AWS EKS Deployment (Days 13-15)
+### Phase 5: AWS EKS Deployment (Days 13-15)
 **Goal**: Deploy to AWS cloud
 
 **Cost Information**: See [AWS_COST_BREAKDOWN.md](./AWS_COST_BREAKDOWN.md) for detailed pricing (~$23-26 for 5 days)
@@ -744,7 +723,7 @@ Thread Groups:
 
 ---
 
-### Phase 7: JMeter Performance Testing (Days 16-17)
+### Phase 6: JMeter Performance Testing (Days 16-17)
 **Goal**: Load test and analyze performance
 
 **Tasks**:
@@ -776,7 +755,7 @@ Thread Groups:
 
 ---
 
-### Phase 8: Documentation & Submission (Days 18-19)
+### Phase 7: Documentation & Submission (Days 18-19)
 **Goal**: Prepare final submission
 
 **Tasks**:

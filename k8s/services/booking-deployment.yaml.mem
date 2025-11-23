@@ -79,10 +79,10 @@ spec:
               key: KAFKA_BROKER_URL
         resources:
           requests:
-            memory: "128Mi"
+            memory: "256Mi"
             cpu: "200m"
           limits:
-            memory: "256Mi"
+            memory: "512Mi"
             cpu: "500m"
         readinessProbe:
           httpGet:

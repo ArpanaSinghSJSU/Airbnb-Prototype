@@ -1,47 +1,47 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: booking-service
+  name: property-service
   namespace: gotour
   labels:
-    app: booking-service
+    app: property-service
 spec:
   type: ClusterIP
   ports:
-  - port: 3004
-    targetPort: 3004
+  - port: 3003
+    targetPort: 3003
     name: http
   selector:
-    app: booking-service
+    app: property-service
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: booking-service
+  name: property-service
   namespace: gotour
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: booking-service
+      app: property-service
   template:
     metadata:
       labels:
-        app: booking-service
+        app: property-service
     spec:
       containers:
-      - name: booking-service
-        image: 832495218053.dkr.ecr.us-east-1.amazonaws.com/booking-service:latest
+      - name: property-service
+        image: 832495218053.dkr.ecr.us-east-1.amazonaws.com/property-service:latest
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 3004
+        - containerPort: 3003
           name: http
         env:
-        - name: BOOKING_PORT
+        - name: PROPERTY_PORT
           valueFrom:
             configMapKeyRef:
               name: gotour-config
-              key: BOOKING_PORT
+              key: PROPERTY_PORT
         - name: NODE_ENV
           valueFrom:
             configMapKeyRef:
@@ -67,34 +67,24 @@ spec:
             configMapKeyRef:
               name: gotour-config
               key: FRONTEND_URL
-        - name: INTERNAL_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: gotour-secrets
-              key: INTERNAL_API_KEY
-        - name: KAFKA_BROKER_URL
-          valueFrom:
-            configMapKeyRef:
-              name: gotour-config
-              key: KAFKA_BROKER_URL
         resources:
           requests:
-            memory: "128Mi"
+            memory: "256Mi"
             cpu: "200m"
           limits:
-            memory: "256Mi"
+            memory: "512Mi"
             cpu: "500m"
         readinessProbe:
           httpGet:
             path: /health
-            port: 3004
+            port: 3003
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 5
         livenessProbe:
           httpGet:
             path: /health
-            port: 3004
+            port: 3003
           initialDelaySeconds: 30
           periodSeconds: 20
           timeoutSeconds: 5

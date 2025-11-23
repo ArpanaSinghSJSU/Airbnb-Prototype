@@ -6,11 +6,10 @@ metadata:
   labels:
     app: frontend
 spec:
-  type: NodePort  # NodePort for external access via Minikube
+  type: ClusterIP  # ClusterIP - Ingress will handle external access
   ports:
   - port: 3000
     targetPort: 3000
-    nodePort: 30000  # Expose on port 30000
     name: http
   selector:
     app: frontend
@@ -32,8 +31,8 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: airbnb-prototype-frontend:latest
-        imagePullPolicy: Never
+        image: 832495218053.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+        imagePullPolicy: Always  # Always pull to get latest image
         ports:
         - containerPort: 3000
           name: http

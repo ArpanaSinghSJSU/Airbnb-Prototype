@@ -30,8 +30,6 @@ spec:
       labels:
         app: zookeeper
     spec:
-      securityContext:
-        fsGroup: 1000
       containers:
       - name: zookeeper
         image: confluentinc/cp-zookeeper:7.4.0
@@ -80,7 +78,6 @@ spec:
       name: zookeeper-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: gp2
       resources:
         requests:
           storage: 2Gi
@@ -88,7 +85,6 @@ spec:
       name: zookeeper-logs
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: gp2
       resources:
         requests:
           storage: 1Gi

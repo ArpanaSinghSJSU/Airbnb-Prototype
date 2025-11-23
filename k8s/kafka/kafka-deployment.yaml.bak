@@ -30,15 +30,6 @@ spec:
       labels:
         app: kafka
     spec:
-      securityContext:
-        fsGroup: 1000
-      initContainers:
-      - name: cleanup-lost-found
-        image: busybox:1.35
-        command: ['sh', '-c', 'rm -rf /var/lib/kafka/data/lost+found']
-        volumeMounts:
-        - name: kafka-data
-          mountPath: /var/lib/kafka/data
       containers:
       - name: kafka
         image: confluentinc/cp-kafka:7.4.0
@@ -53,7 +44,7 @@ spec:
         - name: KAFKA_LISTENERS
           value: "PLAINTEXT://0.0.0.0:9092"
         - name: KAFKA_ADVERTISED_LISTENERS
-          value: "PLAINTEXT://kafka-0.kafka-service:9092"
+          value: "PLAINTEXT://kafka-service:9092"
         - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
           value: "1"
         - name: KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS
@@ -67,31 +58,36 @@ spec:
           mountPath: /var/lib/kafka/data
         resources:
           requests:
-            memory: "384Mi"
+            memory: "512Mi"
             cpu: "250m"
           limits:
-            memory: "768Mi"
+            memory: "1Gi"
             cpu: "500m"
         readinessProbe:
-          tcpSocket:
-            port: 9092
-          initialDelaySeconds: 60
+          exec:
+            command:
+            - sh
+            - -c
+            - "kafka-broker-api-versions --bootstrap-server localhost:9092"
+          initialDelaySeconds: 20
           periodSeconds: 10
           timeoutSeconds: 5
-          failureThreshold: 6
+          failureThreshold: 3
         livenessProbe:
-          tcpSocket:
-            port: 9092
-          initialDelaySeconds: 90
+          exec:
+            command:
+            - sh
+            - -c
+            - "kafka-broker-api-versions --bootstrap-server localhost:9092"
+          initialDelaySeconds: 40
           periodSeconds: 20
           timeoutSeconds: 5
-          failureThreshold: 6
+          failureThreshold: 3
   volumeClaimTemplates:
   - metadata:
       name: kafka-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: gp2
       resources:
         requests:
           storage: 5Gi

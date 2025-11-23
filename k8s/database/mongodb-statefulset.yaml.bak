@@ -54,11 +54,11 @@ spec:
           mountPath: /data/db
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "200m"
-          limits:
             memory: "512Mi"
-            cpu: "400m"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
         readinessProbe:
           exec:
             command:
@@ -84,7 +84,6 @@ spec:
       name: mongodb-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: gp2
       resources:
         requests:
           storage: 5Gi

@@ -1,7 +1,7 @@
 # GoTour Airbnb Prototype - Makefile
 # Simplified commands for development
 
-.PHONY: help setup server frontend stop-all stop-backend stop-frontend health logs clean seed kafka-status kafka-topics kafka-logs kafka-test k8s-deploy k8s-status k8s-logs k8s-cleanup k8s-test
+.PHONY: help setup server frontend stop-all stop-backend stop-frontend health logs clean seed kafka-status kafka-topics kafka-logs kafka-test k8s-deploy k8s-status k8s-logs k8s-cleanup k8s-test eks-push eks-update eks-deploy eks-redeploy eks-all eks-status
 
 # Default target - show help
 help:
@@ -42,6 +42,14 @@ help:
 	@echo "  make k8s-logs        - View K8s logs"
 	@echo "  make k8s-cleanup     - Remove all K8s resources"
 	@echo "  make k8s-test        - Test K8s deployment"
+	@echo ""
+	@echo "☁️  AWS EKS Deployment:"
+	@echo "  make eks-push        - Build & push all images to AWS ECR"
+	@echo "  make eks-update      - Update K8s manifests with ECR image URLs"
+	@echo "  make eks-deploy      - Deploy application to EKS cluster"
+	@echo "  make eks-redeploy    - Delete and redeploy application to EKS"
+	@echo "  make eks-all         - Complete EKS deployment (push + update + deploy)"
+	@echo "  make eks-status      - Check deployment status on EKS"
 	@echo ""
 
 # ============================================
@@ -664,3 +672,113 @@ k8s-test:
 	@kubectl exec -it kafka-0 -n gotour -- kafka-topics --bootstrap-server localhost:9092 --list 2>/dev/null || echo "❌ Kafka not accessible"
 	@echo ""
 	@echo "✅ Test complete! Check output above for any errors."
+
+# ============================================
+# 8. AWS EKS COMMANDS
+# ============================================
+
+eks-push:
+	@echo "☁️  Pushing images to AWS ECR..."
+	@echo ""
+	@# Check if required environment variables are set
+	@if [ -z "$$AWS_ACCOUNT_ID" ] || [ -z "$$AWS_REGION" ]; then \
+		echo "❌ Error: Required environment variables not set!"; \
+		echo ""; \
+		echo "Please export these variables first:"; \
+		echo "  export AWS_ACCOUNT_ID=832495218053"; \
+		echo "  export AWS_REGION=us-east-1"; \
+		echo "  export ECR_BASE=832495218053.dkr.ecr.us-east-1.amazonaws.com"; \
+		echo ""; \
+		exit 1; \
+	fi
+	@# Make script executable
+	@chmod +x push-to-ecr.sh
+	@# Run the script
+	@./push-to-ecr.sh
+
+eks-update:
+	@echo "🔧 Updating Kubernetes manifests with ECR image URLs..."
+	@echo ""
+	@# Check if required environment variables are set
+	@if [ -z "$$AWS_ACCOUNT_ID" ] || [ -z "$$AWS_REGION" ]; then \
+		echo "❌ Error: Required environment variables not set!"; \
+		echo ""; \
+		echo "Please export these variables first:"; \
+		echo "  export AWS_ACCOUNT_ID=832495218053"; \
+		echo "  export AWS_REGION=us-east-1"; \
+		echo "  export ECR_BASE=832495218053.dkr.ecr.us-east-1.amazonaws.com"; \
+		echo ""; \
+		exit 1; \
+	fi
+	@# Make script executable
+	@chmod +x update-k8s-images.sh
+	@# Run the script
+	@./update-k8s-images.sh
+
+eks-deploy:
+	@echo "🚀 Deploying to AWS EKS..."
+	@echo ""
+	@# Check if required environment variables are set
+	@if [ -z "$$AWS_ACCOUNT_ID" ] || [ -z "$$AWS_REGION" ] || [ -z "$$CLUSTER_NAME" ]; then \
+		echo "❌ Error: Required environment variables not set!"; \
+		echo ""; \
+		echo "Please export these variables first:"; \
+		echo "  export AWS_ACCOUNT_ID=832495218053"; \
+		echo "  export AWS_REGION=us-east-1"; \
+		echo "  export CLUSTER_NAME=gotour-cluster"; \
+		echo ""; \
+		exit 1; \
+	fi
+	@# Make script executable
+	@chmod +x deploy-to-eks.sh
+	@# Run the script
+	@./deploy-to-eks.sh
+
+eks-all: eks-push eks-update eks-deploy
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║        ✅ Complete EKS Deployment Finished!                ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+
+eks-redeploy:
+	@echo "🔄 Redeploying application to EKS..."
+	@echo ""
+	@echo "⚠️  This will delete and recreate all deployments"
+	@echo ""
+	@# Delete existing deployments
+	@kubectl delete -f k8s/services/ -n gotour 2>/dev/null || echo "Services cleaned up"
+	@kubectl delete -f k8s/frontend/ -n gotour 2>/dev/null || echo "Frontend cleaned up"
+	@kubectl delete -f k8s/database/ -n gotour 2>/dev/null || echo "Database cleaned up"
+	@kubectl delete -f k8s/kafka/ -n gotour 2>/dev/null || echo "Kafka cleaned up"
+	@echo ""
+	@echo "⏳ Waiting for pods to terminate (15 seconds)..."
+	@sleep 15
+	@echo ""
+	@# Redeploy
+	@chmod +x deploy-to-eks.sh
+	@./deploy-to-eks.sh
+
+eks-status:
+	@echo "📊 EKS Deployment Status"
+	@echo "══════════════════════════════════════════════════════════"
+	@echo ""
+	@echo "📦 Pods:"
+	@kubectl get pods -n gotour
+	@echo ""
+	@echo "🌐 Services:"
+	@kubectl get services -n gotour
+	@echo ""
+	@echo "📈 Deployments:"
+	@kubectl get deployments -n gotour
+	@echo ""
+	@echo "🔍 LoadBalancer URL:"
+	@kubectl get svc -n gotour -o wide | grep LoadBalancer || echo "No LoadBalancer found"
+
+eks-seed:
+	@echo "📊 Seeding MongoDB on AWS EKS..."
+	@echo ""
+	@# Make script executable
+	@chmod +x seed-eks-mongo.sh
+	@# Run the seed script
+	@./seed-eks-mongo.sh

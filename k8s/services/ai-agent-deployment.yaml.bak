@@ -32,7 +32,7 @@ spec:
       containers:
       - name: ai-agent
         image: 832495218053.dkr.ecr.us-east-1.amazonaws.com/ai-agent:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         ports:
         - containerPort: 8000
           name: http
@@ -90,7 +90,7 @@ spec:
               optional: true
         resources:
           requests:
-            memory: "256Mi"
+            memory: "512Mi"
             cpu: "250m"
           limits:
             memory: "1Gi"

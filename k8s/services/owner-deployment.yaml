@@ -31,8 +31,8 @@ spec:
     spec:
       containers:
       - name: owner-service
-        image: airbnb-prototype-owner-service:latest
-        imagePullPolicy: Never
+        image: 832495218053.dkr.ecr.us-east-1.amazonaws.com/owner-service:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3002
           name: http
@@ -74,10 +74,10 @@ spec:
               key: KAFKA_BROKER_URL
         resources:
           requests:
-            memory: "256Mi"
+            memory: "128Mi"
             cpu: "200m"
           limits:
-            memory: "512Mi"
+            memory: "256Mi"
             cpu: "500m"
         readinessProbe:
           httpGet:

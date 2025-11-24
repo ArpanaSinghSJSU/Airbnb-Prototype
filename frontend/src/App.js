@@ -5,6 +5,9 @@ import store from './redux/store';
 import { checkAuth } from './redux/slices/authSlice';
 import { selectUser, selectAuthLoading } from './redux/slices/authSlice';
 
+// Public Pages
+import Home from './pages/Home';
+
 // Auth Pages
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -64,23 +67,18 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route 
-        path="/" 
-        element={
-          user 
-            ? <Navigate to={`/${user.role}/dashboard`} /> 
-            : <Navigate to="/login" />
-        } 
-      />
+      {/* Public Routes - No authentication required */}
+      <Route path="/" element={<Home />} />
+      <Route path="/search" element={<PropertySearch />} />
+      <Route path="/property/:id" element={<PropertyDetails />} />
+      
+      {/* Auth Routes */}
       <Route path="/login" element={user ? <Navigate to={`/${user.role}/dashboard`} /> : <Login />} />
       <Route path="/signup" element={user ? <Navigate to={`/${user.role}/dashboard`} /> : <Signup />} />
 
-      {/* Traveler Routes */}
+      {/* Traveler Protected Routes */}
       <Route path="/traveler/dashboard" element={<ProtectedRoute requiredRole="traveler"><TravelerDashboard /></ProtectedRoute>} />
       <Route path="/traveler/profile" element={<ProtectedRoute requiredRole="traveler"><TravelerProfile /></ProtectedRoute>} />
-      <Route path="/traveler/search" element={<ProtectedRoute requiredRole="traveler"><PropertySearch /></ProtectedRoute>} />
-      <Route path="/traveler/property/:id" element={<ProtectedRoute requiredRole="traveler"><PropertyDetails /></ProtectedRoute>} />
       <Route path="/traveler/bookings" element={<ProtectedRoute requiredRole="traveler"><MyBookings /></ProtectedRoute>} />
       <Route path="/traveler/favorites" element={<ProtectedRoute requiredRole="traveler"><Favorites /></ProtectedRoute>} />
       <Route path="/traveler/history" element={<ProtectedRoute requiredRole="traveler"><History /></ProtectedRoute>} />

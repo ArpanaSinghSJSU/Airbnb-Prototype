@@ -1,7 +1,7 @@
 # GoTour Airbnb Prototype - Makefile
 # Simplified commands for development
 
-.PHONY: help setup server frontend stop-all stop-backend stop-frontend health logs clean seed kafka-status kafka-topics kafka-logs kafka-test k8s-deploy k8s-status k8s-logs k8s-cleanup k8s-test eks-push eks-update eks-deploy eks-redeploy eks-all eks-status
+.PHONY: help setup fresh-start server frontend stop-all stop-backend stop-frontend health logs clean seed kafka-status kafka-topics kafka-logs kafka-test k8s-deploy k8s-status k8s-logs k8s-cleanup k8s-test eks-push eks-update eks-deploy eks-redeploy eks-all eks-status
 
 # Default target - show help
 help:
@@ -11,6 +11,7 @@ help:
 	@echo ""
 	@echo "⚙️  Setup (First Time):"
 	@echo "  make setup           - Install dependencies & setup .env"
+	@echo "  make fresh-start     - Clear all caches & fresh restart"
 	@echo ""
 	@echo "🚀 Main Commands:"
 	@echo "  make server          - Start all backend services (Docker)"
@@ -94,6 +95,14 @@ setup:
 	@echo "  3. Run 'make seed' to populate test data"
 	@echo "  4. Run 'make frontend' to start the React app"
 	@echo ""
+
+# Fresh start - clear caches and restart
+fresh-start:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║              🧹 Fresh Start - Clear All Caches             ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@./scripts/setup/fresh-start.sh
 
 # ============================================
 # 1. START BACKEND SERVICES
@@ -607,8 +616,8 @@ kafka-reset:
 
 k8s-deploy:
 	@echo "☸️  Deploying to Kubernetes (Minikube)..."
-	@chmod +x k8s/deploy.sh
-	@./k8s/deploy.sh
+	@chmod +x scripts/k8s/deploy.sh
+	@./scripts/k8s/deploy.sh
 
 k8s-status:
 	@echo "☸️  Kubernetes Status"
@@ -651,8 +660,8 @@ k8s-logs:
 
 k8s-cleanup:
 	@echo "🧹 Cleaning up Kubernetes resources..."
-	@chmod +x k8s/cleanup.sh
-	@./k8s/cleanup.sh
+	@chmod +x scripts/k8s/cleanup.sh
+	@./scripts/k8s/cleanup.sh
 
 k8s-test:
 	@echo "🧪 Testing Kubernetes Deployment"
@@ -692,9 +701,9 @@ eks-push:
 		exit 1; \
 	fi
 	@# Make script executable
-	@chmod +x push-to-ecr.sh
+	@chmod +x scripts/aws/push-to-ecr.sh
 	@# Run the script
-	@./push-to-ecr.sh
+	@./scripts/aws/push-to-ecr.sh
 
 eks-update:
 	@echo "🔧 Updating Kubernetes manifests with ECR image URLs..."
@@ -711,9 +720,9 @@ eks-update:
 		exit 1; \
 	fi
 	@# Make script executable
-	@chmod +x update-k8s-images.sh
+	@chmod +x scripts/aws/update-k8s-images.sh
 	@# Run the script
-	@./update-k8s-images.sh
+	@./scripts/aws/update-k8s-images.sh
 
 eks-deploy:
 	@echo "🚀 Deploying to AWS EKS..."
@@ -730,9 +739,9 @@ eks-deploy:
 		exit 1; \
 	fi
 	@# Make script executable
-	@chmod +x deploy-to-eks.sh
+	@chmod +x scripts/aws/deploy-to-eks.sh
 	@# Run the script
-	@./deploy-to-eks.sh
+	@./scripts/aws/deploy-to-eks.sh
 
 eks-all: eks-push eks-update eks-deploy
 	@echo ""
@@ -756,8 +765,8 @@ eks-redeploy:
 	@sleep 15
 	@echo ""
 	@# Redeploy
-	@chmod +x deploy-to-eks.sh
-	@./deploy-to-eks.sh
+	@chmod +x scripts/aws/deploy-to-eks.sh
+	@./scripts/aws/deploy-to-eks.sh
 
 eks-status:
 	@echo "📊 EKS Deployment Status"
@@ -779,6 +788,6 @@ eks-seed:
 	@echo "📊 Seeding MongoDB on AWS EKS..."
 	@echo ""
 	@# Make script executable
-	@chmod +x seed-eks-mongo.sh
+	@chmod +x scripts/aws/seed-eks-mongo.sh
 	@# Run the seed script
-	@./seed-eks-mongo.sh
+	@./scripts/aws/seed-eks-mongo.sh

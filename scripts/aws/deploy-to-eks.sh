@@ -248,6 +248,42 @@ echo "📊 Deployments:"
 kubectl get deployments -n "$NAMESPACE"
 echo ""
 
+# ═══════════════════════════════════════════════════════════
+# Step 10: Force Restart Deployments to Pull Latest Images
+# ═══════════════════════════════════════════════════════════
+echo "═══════════════════════════════════════════════════════════"
+echo "📋 Step 10: Restarting deployments to pull latest images..."
+echo "═══════════════════════════════════════════════════════════"
+echo ""
+
+echo "🔄 Forcing rollout restart to ensure latest images are pulled from ECR..."
+echo ""
+
+# Restart all microservices
+for service in "${SERVICES[@]}"; do
+  echo "  • Restarting ${service}-service..."
+  kubectl rollout restart deployment/${service}-service -n "$NAMESPACE" 2>/dev/null || echo "    ⚠️  ${service}-service not found"
+done
+
+# Restart frontend
+echo "  • Restarting frontend..."
+kubectl rollout restart deployment/frontend -n "$NAMESPACE" 2>/dev/null || echo "    ⚠️  frontend not found"
+
+echo ""
+echo "⏳ Waiting for rollouts to complete..."
+echo ""
+
+# Wait for each deployment to finish rolling out
+for service in "${SERVICES[@]}"; do
+  kubectl rollout status deployment/${service}-service -n "$NAMESPACE" --timeout=2m 2>/dev/null || true
+done
+
+kubectl rollout status deployment/frontend -n "$NAMESPACE" --timeout=2m 2>/dev/null || true
+
+echo ""
+echo "✅ All deployments restarted and rolling out"
+echo ""
+
 # Check for LoadBalancer external IP
 echo "🔍 Checking for LoadBalancer URL..."
 EXTERNAL_IP=$(kubectl get svc -n "$NAMESPACE" -o jsonpath='{.items[?(@.spec.type=="LoadBalancer")].status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
@@ -278,10 +314,12 @@ echo "  • Region: $AWS_REGION"
 echo ""
 
 echo "📋 Next Steps:"
-echo "  1. Monitor pods: kubectl get pods -n $NAMESPACE -w"
-echo "  2. Check logs: kubectl logs -f deployment/<service-name> -n $NAMESPACE"
-echo "  3. Get LoadBalancer URL: kubectl get svc -n $NAMESPACE"
-echo "  4. Access application via LoadBalancer URL"
+echo "  1. Open LoadBalancer URL in INCOGNITO mode (to avoid browser cache)"
+echo "  2. Monitor pods: kubectl get pods -n $NAMESPACE -w"
+echo "  3. Check logs: kubectl logs -f deployment/<service-name> -n $NAMESPACE"
+echo "  4. Verify changes are live (new home page, AI agent respects numbers)"
+echo ""
+echo "💡 Browser Cache: Open in incognito/private mode to see latest changes!"
 echo ""
 
 echo "💡 Useful Commands:"

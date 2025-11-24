@@ -18,7 +18,7 @@ ECR_BASE="${ECR_BASE:-$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com}"
 PROJECT_PREFIX="airbnb-prototype"
 
 # Service names
-SERVICES=("traveler-service" "owner-service" "property-service" "booking-service" "ai-agent")
+SERVICES=("traveler-service" "owner-service" "property-service" "booking-service" "ai-agent" "frontend")
 
 # Validate required environment variables
 if [ -z "$AWS_ACCOUNT_ID" ] || [ -z "$AWS_REGION" ]; then

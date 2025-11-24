@@ -11,7 +11,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: traveler-service
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 5
   metrics:
   - type: Resource
@@ -37,7 +37,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: owner-service
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 5
   metrics:
   - type: Resource
@@ -63,7 +63,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: property-service
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 5
   metrics:
   - type: Resource
@@ -89,7 +89,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: booking-service
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 5
   metrics:
   - type: Resource
@@ -115,7 +115,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: frontend
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 4
   metrics:
   - type: Resource

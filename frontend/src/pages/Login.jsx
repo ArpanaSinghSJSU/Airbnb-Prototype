@@ -1,14 +1,38 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser, selectAuthLoading, selectAuthError, clearError } from '../redux/slices/authSlice';
+import { loginUser, selectAuthLoading, selectAuthError, selectUser, clearError } from '../redux/slices/authSlice';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
   const loading = useSelector(selectAuthLoading);
   const error = useSelector(selectAuthError);
+  const user = useSelector(selectUser);
+
+  // Show message from navigation state (e.g., "Please sign in to book")
+  const loginMessage = location.state?.message;
+
+  // Handle redirect after successful login
+  useEffect(() => {
+    if (user) {
+      // Check if there's a return URL
+      const returnTo = sessionStorage.getItem('returnTo');
+      const bookingData = sessionStorage.getItem('bookingData');
+      
+      if (returnTo) {
+        sessionStorage.removeItem('returnTo');
+        sessionStorage.removeItem('bookingData');
+        navigate(returnTo, { state: { bookingData: bookingData ? JSON.parse(bookingData) : null } });
+      } else {
+        // Default redirect to dashboard
+        navigate(`/${user.role}/dashboard`);
+      }
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,7 +40,7 @@ const Login = () => {
 
     try {
       await dispatch(loginUser({ email, password })).unwrap();
-      // If successful, App.js will handle redirect
+      // Redirect will be handled by useEffect above
     } catch (err) {
       // Error is handled by Redux state
       console.error('Login failed:', err);
@@ -35,6 +59,12 @@ const Login = () => {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {loginMessage && (
+            <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 rounded">
+              <p className="text-sm">{loginMessage}</p>
+            </div>
+          )}
+          
           {error && (
             <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded">
               <p className="font-medium">Error</p>

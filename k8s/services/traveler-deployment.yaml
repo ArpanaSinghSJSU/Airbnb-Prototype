@@ -20,7 +20,7 @@ metadata:
   name: traveler-service
   namespace: gotour
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: traveler-service

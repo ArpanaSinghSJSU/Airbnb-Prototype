@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../redux/slices/authSlice';
 import { propertyAPI } from '../../services/api';
-import Navbar from '../../components/shared/Navbar';
 import AIAgent from '../../components/shared/AIAgent';
 
 const PropertySearch = () => {
+  const user = useSelector(selectUser);
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAIAgent, setShowAIAgent] = useState(false);
@@ -52,11 +54,51 @@ const PropertySearch = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+    <div className="min-h-screen bg-white">
+      {/* Navigation */}
+      <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20">
+            {/* Logo */}
+            <Link to="/" className="flex items-center">
+              <span className="text-3xl font-bold text-airbnb-pink">GoTour</span>
+            </Link>
+
+            {/* Right side - Auth buttons */}
+            <div className="flex items-center space-x-4">
+              {user ? (
+                <>
+                  <span className="text-gray-700">Welcome, {user.firstName}!</span>
+                  <Link
+                    to={`/${user.role}/dashboard`}
+                    className="px-4 py-2 text-airbnb-pink hover:bg-gray-50 rounded-full transition"
+                  >
+                    Dashboard
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-full transition"
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="px-4 py-2 bg-airbnb-pink text-white rounded-full hover:bg-red-600 transition"
+                  >
+                    Sign up
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
       
       {/* Search Filters */}
-      <div className="bg-white shadow-sm border-b sticky top-16 z-30">
+      <div className="bg-white shadow-sm border-b z-30">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
@@ -127,25 +169,25 @@ const PropertySearch = () => {
       </div>
 
       {/* Results */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-airbnb-dark">
-            {loading ? 'Searching...' : `${properties.length} properties found`}
-          </h1>
-          {filters.location && (
-            <p className="text-airbnb-gray mt-1">in {filters.location}</p>
-          )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900">
+              {loading ? 'Searching...' : `${properties.length} properties found`}
+            </h2>
+            {filters.location && (
+              <p className="text-gray-600 mt-1">in {filters.location}</p>
+            )}
+          </div>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="bg-white rounded-xl shadow animate-pulse">
-                <div className="h-64 bg-gray-200 rounded-t-xl"></div>
-                <div className="p-4 space-y-3">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="bg-gray-200 rounded-xl h-64 mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
               </div>
             ))}
           </div>
@@ -156,69 +198,64 @@ const PropertySearch = () => {
             <p className="text-airbnb-gray">Try adjusting your search filters</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {properties.map((property) => (
               <Link
                 key={property.id}
-                to={`/traveler/property/${property.id}`}
-                className="bg-white rounded-xl shadow hover:shadow-xl transition group"
+                to={`/property/${property.id}`}
+                className="group cursor-pointer"
               >
-                <div className="relative h-64 bg-gray-200 rounded-t-xl overflow-hidden">
-                  {property.photos && property.photos.length > 0 ? (
-                    <img
-                      src={`http://localhost:3003${property.photos[0]}`}
-                      alt={property.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                      onError={(e) => {
-                        e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-6xl">🏠</div>';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-6xl">
-                      🏠
-                    </div>
-                  )}
-                  <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded-full shadow">
-                    <span className="text-sm font-semibold text-airbnb-dark">
-                      ${property.pricePerNight}/night
-                    </span>
+                <div className="relative overflow-hidden rounded-xl mb-3">
+                  <div className="aspect-square bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                    {property.photos && property.photos.length > 0 ? (
+                      <img
+                        src={`http://localhost:3003${property.photos[0]}`}
+                        alt={property.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const icon = 
+                            property.propertyType === 'apartment' ? '🏢' :
+                            property.propertyType === 'house' ? '🏠' :
+                            property.propertyType === 'villa' ? '🏰' :
+                            property.propertyType === 'cabin' ? '🏡' :
+                            property.propertyType === 'condo' ? '🏬' : '🏠';
+                          e.target.parentElement.innerHTML = `<span class="text-4xl">${icon}</span>`;
+                        }}
+                      />
+                    ) : (
+                      <span className="text-4xl">
+                        {property.propertyType === 'apartment' && '🏢'}
+                        {property.propertyType === 'house' && '🏠'}
+                        {property.propertyType === 'villa' && '🏰'}
+                        {property.propertyType === 'cabin' && '🏡'}
+                        {property.propertyType === 'condo' && '🏬'}
+                        {!property.propertyType && '🏠'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="absolute top-3 right-3">
+                    <button className="bg-white bg-opacity-90 rounded-full p-2 hover:scale-110 transition">
+                      <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
 
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg text-airbnb-dark group-hover:text-airbnb-pink transition">
-                    {property.name}
-                  </h3>
-                  <p className="text-sm text-airbnb-gray mt-1">
-                    📍 {property.city && property.state 
-                      ? `${property.city}, ${property.state}` 
-                      : 'Location'}
+                <div>
+                  <div className="flex justify-between items-start mb-1">
+                    <h3 className="font-semibold text-gray-900 group-hover:text-airbnb-pink transition truncate flex-1">
+                      {property.city}, {property.country}
+                    </h3>
+                  </div>
+                  <p className="text-gray-600 text-sm mb-1 truncate">{property.name}</p>
+                  <p className="text-gray-500 text-sm mb-2">
+                    {property.bedrooms} bed · {property.bathrooms} bath
                   </p>
-                  <p className="text-sm text-airbnb-gray mt-1">
-                    {property.type && `${property.type} • `}
-                    {property.bedrooms} bed • {property.bathrooms} bath
-                  </p>
-                  <p className="text-sm text-airbnb-gray mt-1">
-                    👥 Up to {property.maxGuests} guests
-                  </p>
-                  
-                  {property.amenities && Array.isArray(property.amenities) && property.amenities.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {property.amenities.slice(0, 3).map((amenity, idx) => (
-                        <span
-                          key={idx}
-                          className="text-xs bg-gray-100 text-airbnb-gray px-2 py-1 rounded-full"
-                        >
-                          {amenity}
-                        </span>
-                      ))}
-                      {property.amenities.length > 3 && (
-                        <span className="text-xs text-airbnb-gray px-2 py-1">
-                          +{property.amenities.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  )}
+                  <div className="flex items-baseline">
+                    <span className="text-gray-900 font-semibold">${property.pricePerNight}</span>
+                    <span className="text-gray-600 text-sm ml-1">/ night</span>
+                  </div>
                 </div>
               </Link>
             ))}

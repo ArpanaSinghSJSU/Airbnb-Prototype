@@ -135,7 +135,7 @@ const OwnerDashboard = () => {
                         <div className="h-20 w-32 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
                           {(() => {
                             // Get photos from populated property object
-                            let photos = booking.property?.photos;
+                            let photos = booking.propertyId?.photos || booking.property?.photos;
                             if (typeof photos === 'string') {
                               try {
                                 photos = JSON.parse(photos);
@@ -146,7 +146,7 @@ const OwnerDashboard = () => {
                             return photos && photos.length > 0 ? (
                               <img
                                 src={`http://localhost:3003${photos[0]}`}
-                                alt={booking.property?.name || 'Property'}
+                                alt={booking.propertyId?.name || booking.property?.name || 'Property'}
                                 className="h-20 w-32 object-cover"
                                 onError={(e) => {
                                   e.target.parentElement.innerHTML = '<div class="text-2xl">🏠</div>';
@@ -162,10 +162,10 @@ const OwnerDashboard = () => {
                         <div className="flex-1 flex justify-between items-start">
                           <div>
                             <h3 className="font-semibold text-airbnb-dark">
-                              {booking.property?.name || 'Property'}
+                              {booking.propertyId?.name || booking.property?.name || 'Property'}
                             </h3>
                             <p className="text-sm text-airbnb-gray mt-1">
-                              Guest: {booking.traveler?.fullName || 'Guest'}
+                              Guest: {booking.travelerId?.fullName || booking.traveler?.fullName || 'Guest'}
                             </p>
                             <p className="text-sm text-airbnb-gray mt-1">
                               📅 {new Date(booking.checkInDate).toLocaleDateString()} - {new Date(booking.checkOutDate).toLocaleDateString()}

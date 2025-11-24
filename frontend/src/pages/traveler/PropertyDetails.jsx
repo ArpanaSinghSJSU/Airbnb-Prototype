@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../redux/slices/authSlice';
 import { propertyAPI, bookingAPI, favoritesAPI } from '../../services/api';
 import Navbar from '../../components/shared/Navbar';
 
 const PropertyDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const user = useSelector(selectUser);
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [bookingData, setBookingData] = useState({
@@ -50,6 +53,25 @@ const PropertyDetails = () => {
 
   const handleBooking = async (e) => {
     e.preventDefault();
+    
+    // Check if user is logged in
+    if (!user) {
+      // Save the current URL to redirect back after login
+      sessionStorage.setItem('returnTo', `/property/${id}`);
+      sessionStorage.setItem('bookingData', JSON.stringify(bookingData));
+      navigate('/login', { state: { from: `/property/${id}`, message: 'Please sign in to book this property' } });
+      return;
+    }
+
+    // Check if user is a traveler
+    if (user.role !== 'traveler') {
+      setMessage({
+        type: 'error',
+        text: 'Only travelers can book properties. Please sign in with a traveler account.',
+      });
+      return;
+    }
+
     setBooking(true);
     setMessage({ type: '', text: '' });
 
@@ -78,6 +100,22 @@ const PropertyDetails = () => {
   };
 
   const handleAddToFavorites = async () => {
+    // Check if user is logged in
+    if (!user) {
+      sessionStorage.setItem('returnTo', `/property/${id}`);
+      navigate('/login', { state: { from: `/property/${id}`, message: 'Please sign in to add favorites' } });
+      return;
+    }
+
+    // Check if user is a traveler
+    if (user.role !== 'traveler') {
+      setMessage({
+        type: 'error',
+        text: 'Only travelers can add favorites.',
+      });
+      return;
+    }
+
     try {
       await favoritesAPI.add(property.id);
       setMessage({ type: 'success', text: 'Added to favorites!' });
@@ -107,7 +145,7 @@ const PropertyDetails = () => {
         <div className="max-w-7xl mx-auto px-4 py-16 text-center">
           <h2 className="text-2xl font-bold text-airbnb-dark">Property not found</h2>
           <button
-            onClick={() => navigate('/traveler/search')}
+            onClick={() => navigate('/search')}
             className="mt-4 text-airbnb-pink hover:underline"
           >
             Back to search
@@ -123,7 +161,7 @@ const PropertyDetails = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Back Button */}
         <button
-          onClick={() => navigate('/traveler/search')}
+          onClick={() => navigate('/search')}
           className="flex items-center text-airbnb-gray hover:text-airbnb-dark mb-6"
         >
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

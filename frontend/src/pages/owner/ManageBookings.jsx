@@ -171,7 +171,7 @@ const ManageBookings = () => {
                     <div className="h-32 w-48 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
                       {(() => {
                         // Get photos from populated property object
-                        let photos = booking.property?.photos;
+                        let photos = booking.propertyId?.photos || booking.property?.photos;
                         if (typeof photos === 'string') {
                           try {
                             photos = JSON.parse(photos);
@@ -182,7 +182,7 @@ const ManageBookings = () => {
                         return photos && photos.length > 0 ? (
                           <img
                             src={`http://localhost:3003${photos[0]}`}
-                            alt={booking.property?.name || 'Property'}
+                            alt={booking.propertyId?.name || booking.property?.name || 'Property'}
                             className="h-32 w-48 object-cover rounded-lg"
                             onError={(e) => {
                               e.target.parentElement.innerHTML = '<div class="text-4xl">🏠</div>';
@@ -200,9 +200,9 @@ const ManageBookings = () => {
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <h3 className="text-xl font-semibold text-airbnb-dark">
-                          {booking.property?.name || 'Property'}
+                          {booking.propertyId?.name || booking.property?.name || 'Property'}
                         </h3>
-                        <p className="text-airbnb-gray mt-1">Guest: {booking.traveler?.fullName || 'Guest'}</p>
+                        <p className="text-airbnb-gray mt-1">Guest: {booking.travelerId?.fullName || booking.traveler?.fullName || 'Guest'}</p>
                       </div>
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(

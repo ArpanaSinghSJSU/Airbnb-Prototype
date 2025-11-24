@@ -387,6 +387,45 @@ Format your response as a structured JSON-like output that I can parse."""
         
         return tips
     
+    def _extract_number_from_query(self, query: str) -> int:
+        """
+        Extract the number of results requested from the user's query.
+        
+        Examples:
+            "find three restaurants" -> 3
+            "show me 5 hotels" -> 5
+            "list 10 attractions" -> 10
+            "find restaurants" -> 5 (default)
+        
+        Returns:
+            Number of results requested (default: 5, max: 10)
+        """
+        import re
+        
+        # Word to number mapping
+        word_to_num = {
+            'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+            'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+            'a few': 5, 'several': 5, 'some': 5, 'few': 3
+        }
+        
+        query_lower = query.lower()
+        
+        # Try to find numeric digits first (e.g., "5" or "10")
+        digit_match = re.search(r'\b(\d+)\b', query_lower)
+        if digit_match:
+            num = int(digit_match.group(1))
+            # Cap at 10 for performance
+            return min(max(1, num), 10)
+        
+        # Try to find word numbers (e.g., "three" or "five")
+        for word, num in word_to_num.items():
+            if word in query_lower:
+                return num
+        
+        # Default to 5 if no number specified
+        return 5
+
     def answer_query(self, query: str, booking_context=None, preferences: Dict = None) -> str:
         """
         Answer a specific travel question using Tavily search and LLM
@@ -400,6 +439,10 @@ Format your response as a structured JSON-like output that I can parse."""
             A formatted answer to the question
         """
         try:
+            # Extract number of results requested from query
+            requested_count = self._extract_number_from_query(query)
+            print(f"📊 User requested {requested_count} results")
+            
             # Determine location from booking context using structured fields
             location = "the area"
             search_location = ""
@@ -427,10 +470,10 @@ Format your response as a structured JSON-like output that I can parse."""
             
             print(f"🔍 Enhanced search query: {enhanced_query}")
             
-            # Search with Tavily - get exactly 5 results
+            # Search with Tavily - use the requested number of results
             search_results = self.tavily_client.search(
                 query=enhanced_query,
-                max_results=5,
+                max_results=requested_count,
                 search_depth="advanced",
                 include_domains=[],  # No domain restrictions
                 exclude_domains=[]   # No domain exclusions
@@ -449,7 +492,7 @@ Format your response as a structured JSON-like output that I can parse."""
             
 **CRITICAL REQUIREMENTS:**
 1. ONLY recommend places in {location} - no other cities, states, or countries
-2. Show EXACTLY 5 recommendations (no more, no less)
+2. Show EXACTLY {requested_count} recommendations (no more, no less) - this is what the user specifically requested
 3. If a search result is not in {location}, skip it and don't mention it
 
 Trip Details:
@@ -461,11 +504,11 @@ Search Results:
 {formatted_results}
 
 Provide a helpful answer with:
-- Friendly opening line
-- EXACTLY 5 recommendations from results ONLY in {location}
+- Friendly opening line acknowledging the user's request for {requested_count} recommendations
+- EXACTLY {requested_count} recommendations from results ONLY in {location}
 - For each: Name, brief description (1-2 sentences), and URL link
 - Relevant details (cuisine, price range, rating, dietary options, etc.)
-- Keep it concise (max 300 words total)
+- Keep it concise
 
 Format with emojis and clean bullet points."""
 

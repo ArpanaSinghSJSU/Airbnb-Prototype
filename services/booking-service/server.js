@@ -2,12 +2,32 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./src/utils/db');
+const { initProducer, createTopics } = require('./src/utils/kafka');
+const { startBookingRequestConsumer } = require('./src/consumers/bookingRequestConsumer');
 
 const app = express();
 const PORT = process.env.BOOKING_PORT || 3004;
 
 // Connect to MongoDB
 connectDB();
+
+// Initialize Kafka (async)
+async function initKafka() {
+  try {
+    console.log('🔄 Initializing Kafka for booking-service...');
+    await initProducer();
+    await createTopics();
+    // Start consumer to listen for booking requests
+    await startBookingRequestConsumer();
+    console.log('✅ Kafka initialized successfully');
+  } catch (error) {
+    console.error('❌ Kafka initialization error:', error.message);
+    console.log('⚠️  Service will continue without Kafka');
+  }
+}
+
+// Start Kafka after a short delay to allow other services to initialize
+setTimeout(initKafka, 5000);
 
 // Middleware
 app.use(cors({

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { signupUser, selectAuthLoading, selectAuthError, clearError } from '../redux/slices/authSlice';
+import { signupUser, selectAuthLoading, selectAuthError, selectUser, clearError } from '../redux/slices/authSlice';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -13,8 +13,32 @@ const Signup = () => {
   });
   const [localError, setLocalError] = useState('');
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
   const loading = useSelector(selectAuthLoading);
   const error = useSelector(selectAuthError);
+  const user = useSelector(selectUser);
+
+  // Show message from navigation state
+  const signupMessage = location.state?.message;
+
+  // Handle redirect after successful signup
+  useEffect(() => {
+    if (user) {
+      // Check if there's a return URL
+      const returnTo = sessionStorage.getItem('returnTo');
+      const bookingData = sessionStorage.getItem('bookingData');
+      
+      if (returnTo) {
+        sessionStorage.removeItem('returnTo');
+        sessionStorage.removeItem('bookingData');
+        navigate(returnTo, { state: { bookingData: bookingData ? JSON.parse(bookingData) : null } });
+      } else {
+        // Default redirect to dashboard
+        navigate(`/${user.role}/dashboard`);
+      }
+    }
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     setFormData({
@@ -46,7 +70,7 @@ const Signup = () => {
         password: formData.password,
         role: formData.role,
       })).unwrap();
-      // If successful, will auto-login and redirect via App.js
+      // Redirect will be handled by useEffect above
     } catch (err) {
       // Error is handled by Redux state
       console.error('Signup failed:', err);
@@ -65,6 +89,12 @@ const Signup = () => {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {signupMessage && (
+            <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 rounded">
+              <p className="text-sm">{signupMessage}</p>
+            </div>
+          )}
+          
           {(error || localError) && (
             <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded">
               <p className="font-medium">Error</p>

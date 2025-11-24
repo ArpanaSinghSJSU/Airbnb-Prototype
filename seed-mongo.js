@@ -86,6 +86,199 @@ const seedUsers = [
   }
 ];
 
+// Popular cities with their characteristics
+const cities = [
+  // Americas
+  { name: 'New York', state: 'NY', country: 'USA', zipcode: '10001', priceMultiplier: 1.8, currency: 'USD' },
+  { name: 'Los Angeles', state: 'CA', country: 'USA', zipcode: '90001', priceMultiplier: 1.6, currency: 'USD' },
+  { name: 'Miami', state: 'FL', country: 'USA', zipcode: '33139', priceMultiplier: 1.4, currency: 'USD' },
+  { name: 'San Francisco', state: 'CA', country: 'USA', zipcode: '94102', priceMultiplier: 1.9, currency: 'USD' },
+  { name: 'Las Vegas', state: 'NV', country: 'USA', zipcode: '89109', priceMultiplier: 1.2, currency: 'USD' },
+  { name: 'Chicago', state: 'IL', country: 'USA', zipcode: '60601', priceMultiplier: 1.3, currency: 'USD' },
+  { name: 'Vancouver', state: 'BC', country: 'Canada', zipcode: 'V6B 1A1', priceMultiplier: 1.4, currency: 'CAD' },
+  { name: 'Toronto', state: 'ON', country: 'Canada', zipcode: 'M5H 2N2', priceMultiplier: 1.3, currency: 'CAD' },
+  { name: 'Mexico City', state: 'CDMX', country: 'Mexico', zipcode: '06000', priceMultiplier: 0.6, currency: 'USD' },
+  
+  // Europe
+  { name: 'London', state: 'England', country: 'UK', zipcode: 'SW1A 1AA', priceMultiplier: 2.0, currency: 'USD' },
+  { name: 'Paris', state: 'Île-de-France', country: 'France', zipcode: '75001', priceMultiplier: 1.9, currency: 'USD' },
+  { name: 'Rome', state: 'Lazio', country: 'Italy', zipcode: '00100', priceMultiplier: 1.5, currency: 'USD' },
+  { name: 'Barcelona', state: 'Catalonia', country: 'Spain', zipcode: '08001', priceMultiplier: 1.4, currency: 'USD' },
+  { name: 'Amsterdam', state: 'North Holland', country: 'Netherlands', zipcode: '1012', priceMultiplier: 1.7, currency: 'USD' },
+  { name: 'Berlin', state: 'Berlin', country: 'Germany', zipcode: '10115', priceMultiplier: 1.2, currency: 'USD' },
+  { name: 'Prague', state: 'Prague', country: 'Czech Republic', zipcode: '110 00', priceMultiplier: 0.9, currency: 'USD' },
+  { name: 'Istanbul', state: 'Istanbul', country: 'Turkey', zipcode: '34122', priceMultiplier: 0.7, currency: 'USD' },
+  
+  // Asia
+  { name: 'Tokyo', state: 'Tokyo', country: 'Japan', zipcode: '100-0001', priceMultiplier: 1.6, currency: 'USD' },
+  { name: 'Singapore', state: 'Singapore', country: 'Singapore', zipcode: '018956', priceMultiplier: 1.8, currency: 'USD' },
+  { name: 'Dubai', state: 'Dubai', country: 'UAE', zipcode: '00000', priceMultiplier: 1.7, currency: 'USD' },
+  { name: 'Bangkok', state: 'Bangkok', country: 'Thailand', zipcode: '10200', priceMultiplier: 0.5, currency: 'USD' },
+  { name: 'Hong Kong', state: 'Hong Kong', country: 'China', zipcode: '999077', priceMultiplier: 1.8, currency: 'USD' },
+  { name: 'Seoul', state: 'Seoul', country: 'South Korea', zipcode: '04524', priceMultiplier: 1.1, currency: 'USD' },
+  { name: 'Mumbai', state: 'Maharashtra', country: 'India', zipcode: '400001', priceMultiplier: 0.4, currency: 'USD' },
+  { name: 'Bali', state: 'Bali', country: 'Indonesia', zipcode: '80361', priceMultiplier: 0.5, currency: 'USD' },
+  
+  // Oceania
+  { name: 'Sydney', state: 'NSW', country: 'Australia', zipcode: '2000', priceMultiplier: 1.5, currency: 'USD' },
+  { name: 'Melbourne', state: 'VIC', country: 'Australia', zipcode: '3000', priceMultiplier: 1.4, currency: 'USD' },
+  { name: 'Auckland', state: 'Auckland', country: 'New Zealand', zipcode: '1010', priceMultiplier: 1.3, currency: 'USD' },
+  
+  // Africa & Middle East
+  { name: 'Cape Town', state: 'Western Cape', country: 'South Africa', zipcode: '8001', priceMultiplier: 0.6, currency: 'USD' },
+  { name: 'Tel Aviv', state: 'Tel Aviv', country: 'Israel', zipcode: '6107001', priceMultiplier: 1.4, currency: 'USD' }
+];
+
+// Property templates with descriptions
+const propertyTemplates = [
+  {
+    namePattern: 'Modern Downtown Studio',
+    type: 'apartment',
+    description: 'Stylish studio in the heart of the city. Perfect for solo travelers and couples seeking urban convenience.',
+    bedrooms: 1,
+    bathrooms: 1,
+    maxGuests: 2,
+    amenities: ['WiFi', 'Air Conditioning', 'Kitchen', 'Workspace', 'Elevator'],
+    basePrice: 80
+  },
+  {
+    namePattern: 'Luxury City View Apartment',
+    type: 'apartment',
+    description: 'Elegant apartment with stunning city views. Features modern amenities and premium finishes.',
+    bedrooms: 2,
+    bathrooms: 2,
+    maxGuests: 4,
+    amenities: ['WiFi', 'Air Conditioning', 'Kitchen', 'City Views', 'Gym Access', 'Parking'],
+    basePrice: 150
+  },
+  {
+    namePattern: 'Spacious Family Apartment',
+    type: 'apartment',
+    description: 'Comfortable 3-bedroom apartment ideal for families. Close to attractions and public transport.',
+    bedrooms: 3,
+    bathrooms: 2,
+    maxGuests: 6,
+    amenities: ['WiFi', 'Air Conditioning', 'Kitchen', 'Washer/Dryer', 'Parking', 'TV'],
+    basePrice: 200
+  },
+  {
+    namePattern: 'Cozy Historic Home',
+    type: 'house',
+    description: 'Charming house with traditional architecture and modern comforts. Perfect for experiencing local culture.',
+    bedrooms: 3,
+    bathrooms: 2,
+    maxGuests: 6,
+    amenities: ['WiFi', 'Kitchen', 'Garden', 'Fireplace', 'Parking', 'BBQ Grill'],
+    basePrice: 180
+  },
+  {
+    namePattern: 'Luxury Villa with Pool',
+    type: 'villa',
+    description: 'Stunning villa featuring private pool and garden. Ideal for groups seeking luxury and privacy.',
+    bedrooms: 5,
+    bathrooms: 4,
+    maxGuests: 10,
+    amenities: ['WiFi', 'Pool', 'Air Conditioning', 'Kitchen', 'Parking', 'Garden', 'BBQ Grill', 'Hot Tub'],
+    basePrice: 400
+  },
+  {
+    namePattern: 'Beachfront Paradise',
+    type: 'villa',
+    description: 'Exclusive beachfront property with direct beach access. Wake up to ocean views every morning.',
+    bedrooms: 4,
+    bathrooms: 3,
+    maxGuests: 8,
+    amenities: ['WiFi', 'Beach Access', 'Air Conditioning', 'Kitchen', 'Parking', 'Ocean Views', 'BBQ Area'],
+    basePrice: 350
+  },
+  {
+    namePattern: 'Boutique Loft Space',
+    type: 'apartment',
+    description: 'Industrial-chic loft with high ceilings and artistic vibe. Perfect for creatives and design lovers.',
+    bedrooms: 2,
+    bathrooms: 1,
+    maxGuests: 4,
+    amenities: ['WiFi', 'Workspace', 'Kitchen', 'High Ceilings', 'Art Gallery Nearby'],
+    basePrice: 120
+  },
+  {
+    namePattern: 'Penthouse Suite',
+    type: 'apartment',
+    description: 'Top-floor penthouse with panoramic city views. Ultimate luxury in the sky.',
+    bedrooms: 3,
+    bathrooms: 3,
+    maxGuests: 6,
+    amenities: ['WiFi', 'City Views', 'Air Conditioning', 'Kitchen', 'Balcony', 'Gym Access', 'Concierge'],
+    basePrice: 300
+  },
+  {
+    namePattern: 'Quiet Garden Cottage',
+    type: 'house',
+    description: 'Peaceful cottage surrounded by gardens. A tranquil escape while staying close to city attractions.',
+    bedrooms: 2,
+    bathrooms: 1,
+    maxGuests: 4,
+    amenities: ['WiFi', 'Garden', 'Kitchen', 'Fireplace', 'Parking', 'Pet Friendly'],
+    basePrice: 110
+  },
+  {
+    namePattern: 'Modern Condo',
+    type: 'condo',
+    description: 'Contemporary condo with sleek design and smart home features. Perfect for tech-savvy travelers.',
+    bedrooms: 2,
+    bathrooms: 2,
+    maxGuests: 4,
+    amenities: ['WiFi', 'Smart Home', 'Air Conditioning', 'Kitchen', 'Gym Access', 'Parking'],
+    basePrice: 140
+  }
+];
+
+// Generate properties across all cities
+function generateProperties(owners) {
+  const properties = [];
+  let propertyCount = 0;
+  
+  // Generate approximately 100 properties (3-4 per city)
+  cities.forEach((city, cityIndex) => {
+    // Number of properties per city (3-4 properties)
+    const propertiesInCity = 3 + (cityIndex % 2);
+    
+    for (let i = 0; i < propertiesInCity && propertyCount < 100; i++) {
+      const template = propertyTemplates[propertyCount % propertyTemplates.length];
+      const owner = owners[propertyCount % owners.length];
+      
+      // Calculate price based on city multiplier
+      const pricePerNight = Math.round(template.basePrice * city.priceMultiplier);
+      
+      // Generate address
+      const streetNumbers = ['123', '456', '789', '101', '234', '567', '890'];
+      const streetNames = ['Main St', 'Oak Ave', 'Park Blvd', 'Harbor Dr', 'Market St', 'Bay St', 'Center Rd'];
+      const address = `${streetNumbers[i % streetNumbers.length]} ${streetNames[i % streetNames.length]}`;
+      
+      properties.push({
+        ownerId: owner._id,
+        name: `${template.namePattern} in ${city.name}`,
+        propertyType: template.type,
+        description: `${template.description} Located in the vibrant ${city.name}.`,
+        city: city.name,
+        state: city.state,
+        country: city.country,
+        zipcode: city.zipcode,
+        address: address,
+        pricePerNight: pricePerNight,
+        bedrooms: template.bedrooms,
+        bathrooms: template.bathrooms,
+        maxGuests: template.maxGuests,
+        amenities: template.amenities
+      });
+      
+      propertyCount++;
+    }
+  });
+  
+  return properties;
+}
+
 async function seedDatabase() {
   try {
     // Connect to MongoDB
@@ -111,279 +304,122 @@ async function seedDatabase() {
     const travelers = users.filter(u => u.role === 'traveler');
     const owners = users.filter(u => u.role === 'owner');
 
-    // Insert sample properties with structured location fields
-    const properties = await Property.create([
-      {
-        ownerId: owners[0]._id, // Robert Martinez
-        name: 'Beachfront Paradise Villa',
-        propertyType: 'villa',
-        description: 'Stunning oceanfront property with private beach access. Perfect for families and groups seeking a luxurious beach getaway.',
-        city: 'Miami Beach',
-        state: 'FL',
-        country: 'USA',
-        zipcode: '33139',
-        address: '1234 Ocean Drive',
-        pricePerNight: 350.00,
-        bedrooms: 4,
-        bathrooms: 3,
-        maxGuests: 8,
-        amenities: ['WiFi', 'Pool', 'Beach Access', 'Air Conditioning', 'Kitchen', 'Parking', 'Hot Tub']
-      },
-      {
-        ownerId: owners[0]._id, // Robert Martinez
-        name: 'Downtown Miami Apartment',
-        propertyType: 'apartment',
-        description: 'Modern apartment in the heart of downtown Miami. Walking distance to restaurants and nightlife.',
-        city: 'Miami',
-        state: 'FL',
-        country: 'USA',
-        zipcode: '33131',
-        address: '100 Biscayne Blvd',
-        pricePerNight: 150.00,
-        bedrooms: 2,
-        bathrooms: 2,
-        maxGuests: 4,
-        amenities: ['WiFi', 'Air Conditioning', 'Kitchen', 'Gym Access', 'Elevator']
-      },
-      {
-        ownerId: owners[1]._id, // Lisa Anderson
-        name: 'Golden Gate View Loft',
-        propertyType: 'apartment',
-        description: 'Spacious loft with breathtaking views of the Golden Gate Bridge. Industrial chic meets modern comfort.',
-        city: 'San Francisco',
-        state: 'CA',
-        country: 'USA',
-        zipcode: '94102',
-        address: '456 Market Street',
-        pricePerNight: 280.00,
-        bedrooms: 3,
-        bathrooms: 2,
-        maxGuests: 6,
-        amenities: ['WiFi', 'City Views', 'Modern Kitchen', 'Workspace', 'Washer/Dryer']
-      },
-      {
-        ownerId: owners[1]._id, // Lisa Anderson
-        name: 'Cozy Napa Valley Cottage',
-        propertyType: 'cabin',
-        description: 'Charming cottage nestled in wine country. Perfect romantic getaway for couples.',
-        city: 'Napa',
-        state: 'CA',
-        country: 'USA',
-        zipcode: '94558',
-        address: '789 Vineyard Lane',
-        pricePerNight: 200.00,
-        bedrooms: 1,
-        bathrooms: 1,
-        maxGuests: 2,
-        amenities: ['WiFi', 'Fireplace', 'Wine Cellar Access', 'Garden', 'Hot Tub']
-      },
-      {
-        ownerId: owners[2]._id, // David Thompson
-        name: 'Austin Music District Condo',
-        propertyType: 'condo',
-        description: 'Hip condo in the heart of Austin\'s live music scene. Walk to famous venues and BBQ joints.',
-        city: 'Austin',
-        state: 'TX',
-        country: 'USA',
-        zipcode: '78701',
-        address: '321 6th Street',
-        pricePerNight: 120.00,
-        bedrooms: 1,
-        bathrooms: 1,
-        maxGuests: 2,
-        amenities: ['WiFi', 'Air Conditioning', 'Kitchen', 'Balcony', 'Music District']
-      },
-      {
-        ownerId: owners[2]._id, // David Thompson
-        name: 'Lake Travis Retreat',
-        propertyType: 'house',
-        description: 'Waterfront house on Lake Travis. Includes private dock and kayaks. Great for water sports enthusiasts.',
-        city: 'Austin',
-        state: 'TX',
-        country: 'USA',
-        zipcode: '78732',
-        address: '555 Lakeshore Drive',
-        pricePerNight: 300.00,
-        bedrooms: 3,
-        bathrooms: 2,
-        maxGuests: 6,
-        amenities: ['WiFi', 'Lake Access', 'Dock', 'Kayaks', 'BBQ Grill', 'Fire Pit']
-      },
-      {
-        ownerId: owners[3]._id, // Jennifer Lee
-        name: 'Vancouver Mountain View Chalet',
-        propertyType: 'cabin',
-        description: 'Luxurious mountain chalet with panoramic views. Close to ski resorts and hiking trails.',
-        city: 'Whistler',
-        state: 'BC',
-        country: 'Canada',
-        zipcode: 'V0N 1B4',
-        address: '777 Mountain Road',
-        pricePerNight: 450.00,
-        bedrooms: 5,
-        bathrooms: 4,
-        maxGuests: 10,
-        amenities: ['WiFi', 'Mountain Views', 'Fireplace', 'Hot Tub', 'Ski Storage', 'Game Room']
-      },
-      {
-        ownerId: owners[3]._id, // Jennifer Lee
-        name: 'Downtown Vancouver Studio',
-        propertyType: 'apartment',
-        description: 'Modern studio in the heart of downtown. Perfect for solo travelers or couples.',
-        city: 'Vancouver',
-        state: 'BC',
-        country: 'Canada',
-        zipcode: 'V6B 1A1',
-        address: '222 Robson Street',
-        pricePerNight: 100.00,
-        bedrooms: 1,
-        bathrooms: 1,
-        maxGuests: 2,
-        amenities: ['WiFi', 'Air Conditioning', 'Kitchenette', 'Gym Access']
-      }
-    ]);
-    console.log(`🏠 Created ${properties.length} properties`);
+    // Generate and insert 100 properties
+    console.log('🏗️  Generating properties from popular cities worldwide...');
+    const propertiesToCreate = generateProperties(owners);
+    const properties = await Property.create(propertiesToCreate);
+    console.log(`🏠 Created ${properties.length} properties across ${cities.length} cities`);
 
-    // Insert sample bookings
-    const bookings = await Booking.create([
-      // Accepted bookings (past)
+    // Create some sample bookings (fewer since we have 100 properties now)
+    const sampleBookings = [
+      // Past bookings
       {
         propertyId: properties[0]._id,
-        travelerId: travelers[0]._id, // John Smith
+        travelerId: travelers[0]._id,
         checkInDate: new Date('2024-09-01'),
         checkOutDate: new Date('2024-09-05'),
-        guests: 6,
+        guests: 2,
         status: 'ACCEPTED',
-        totalPrice: 1400.00
+        totalPrice: properties[0].pricePerNight * 4
       },
       {
-        propertyId: properties[2]._id,
-        travelerId: travelers[1]._id, // Emma Johnson
+        propertyId: properties[5]._id,
+        travelerId: travelers[1]._id,
         checkInDate: new Date('2024-08-15'),
         checkOutDate: new Date('2024-08-20'),
         guests: 4,
         status: 'ACCEPTED',
-        totalPrice: 1400.00
+        totalPrice: properties[5].pricePerNight * 5
       },
+      // Upcoming bookings
       {
-        propertyId: properties[4]._id,
-        travelerId: travelers[2]._id, // Michael Chen
-        checkInDate: new Date('2024-09-10'),
-        checkOutDate: new Date('2024-09-12'),
-        guests: 2,
-        status: 'ACCEPTED',
-        totalPrice: 240.00
-      },
-      // Accepted bookings (upcoming)
-      {
-        propertyId: properties[1]._id,
-        travelerId: travelers[0]._id, // John Smith
-        checkInDate: new Date('2025-12-01'),
-        checkOutDate: new Date('2025-12-05'),
-        guests: 3,
-        status: 'ACCEPTED',
-        totalPrice: 600.00
-      },
-      {
-        propertyId: properties[3]._id,
-        travelerId: travelers[1]._id, // Emma Johnson
+        propertyId: properties[10]._id,
+        travelerId: travelers[0]._id,
         checkInDate: new Date('2025-12-15'),
-        checkOutDate: new Date('2025-12-17'),
+        checkOutDate: new Date('2025-12-20'),
         guests: 2,
         status: 'ACCEPTED',
-        totalPrice: 400.00
+        totalPrice: properties[10].pricePerNight * 5
       },
       {
-        propertyId: properties[5]._id,
-        travelerId: travelers[3]._id, // Sarah Williams
+        propertyId: properties[20]._id,
+        travelerId: travelers[1]._id,
         checkInDate: new Date('2025-12-20'),
         checkOutDate: new Date('2025-12-27'),
-        guests: 5,
+        guests: 4,
         status: 'ACCEPTED',
-        totalPrice: 2100.00
+        totalPrice: properties[20].pricePerNight * 7
       },
       // Pending bookings
       {
-        propertyId: properties[6]._id,
-        travelerId: travelers[0]._id, // John Smith
+        propertyId: properties[15]._id,
+        travelerId: travelers[2]._id,
         checkInDate: new Date('2025-12-10'),
         checkOutDate: new Date('2025-12-15'),
-        guests: 8,
-        status: 'PENDING',
-        totalPrice: 2250.00
-      },
-      {
-        propertyId: properties[7]._id,
-        travelerId: travelers[2]._id, // Michael Chen
-        checkInDate: new Date('2025-12-05'),
-        checkOutDate: new Date('2025-12-07'),
-        guests: 2,
-        status: 'PENDING',
-        totalPrice: 200.00
-      },
-      {
-        propertyId: properties[0]._id,
-        travelerId: travelers[3]._id, // Sarah Williams
-        checkInDate: new Date('2025-12-28'),
-        checkOutDate: new Date('2026-01-02'),
         guests: 6,
         status: 'PENDING',
-        totalPrice: 1750.00
+        totalPrice: properties[15].pricePerNight * 5
       },
-      // Cancelled bookings
       {
-        propertyId: properties[2]._id,
-        travelerId: travelers[0]._id, // John Smith
-        checkInDate: new Date('2024-10-01'),
-        checkOutDate: new Date('2024-10-05'),
+        propertyId: properties[25]._id,
+        travelerId: travelers[3]._id,
+        checkInDate: new Date('2026-01-05'),
+        checkOutDate: new Date('2026-01-10'),
         guests: 4,
-        status: 'CANCELLED',
-        totalPrice: 1120.00,
-        cancelledBy: 'traveler',
-        cancelledAt: new Date('2024-09-25')
-      },
-      {
-        propertyId: properties[4]._id,
-        travelerId: travelers[1]._id, // Emma Johnson
-        checkInDate: new Date('2024-10-15'),
-        checkOutDate: new Date('2024-10-17'),
-        guests: 2,
-        status: 'CANCELLED',
-        totalPrice: 240.00,
-        cancelledBy: 'owner',
-        cancelledAt: new Date('2024-10-10')
+        status: 'PENDING',
+        totalPrice: properties[25].pricePerNight * 5
       }
-    ]);
-    console.log(`📅 Created ${bookings.length} bookings`);
+    ];
 
-    // Insert sample favorites
-    const favorites = await Favorite.create([
+    const bookings = await Booking.create(sampleBookings);
+    console.log(`📅 Created ${bookings.length} sample bookings`);
+
+    // Create some sample favorites
+    const sampleFavorites = [
       { travelerId: travelers[0]._id, propertyId: properties[0]._id },
-      { travelerId: travelers[0]._id, propertyId: properties[2]._id },
-      { travelerId: travelers[0]._id, propertyId: properties[6]._id },
-      { travelerId: travelers[1]._id, propertyId: properties[3]._id },
+      { travelerId: travelers[0]._id, propertyId: properties[10]._id },
+      { travelerId: travelers[0]._id, propertyId: properties[20]._id },
       { travelerId: travelers[1]._id, propertyId: properties[5]._id },
-      { travelerId: travelers[1]._id, propertyId: properties[7]._id },
-      { travelerId: travelers[2]._id, propertyId: properties[1]._id },
-      { travelerId: travelers[2]._id, propertyId: properties[4]._id },
-      { travelerId: travelers[2]._id, propertyId: properties[7]._id },
-      { travelerId: travelers[3]._id, propertyId: properties[0]._id },
-      { travelerId: travelers[3]._id, propertyId: properties[5]._id },
-      { travelerId: travelers[3]._id, propertyId: properties[6]._id }
-    ]);
+      { travelerId: travelers[1]._id, propertyId: properties[15]._id },
+      { travelerId: travelers[1]._id, propertyId: properties[25]._id },
+      { travelerId: travelers[2]._id, propertyId: properties[30]._id },
+      { travelerId: travelers[2]._id, propertyId: properties[35]._id },
+      { travelerId: travelers[3]._id, propertyId: properties[40]._id },
+      { travelerId: travelers[3]._id, propertyId: properties[45]._id },
+    ];
+
+    const favorites = await Favorite.create(sampleFavorites);
     console.log(`⭐ Created ${favorites.length} favorites`);
 
     // Display summary
-    console.log('\n' + '='.repeat(60));
+    console.log('\n' + '='.repeat(70));
     console.log('📊 DATABASE SEEDING SUMMARY');
-    console.log('='.repeat(60));
+    console.log('='.repeat(70));
     console.log(`✅ Users:      ${users.length} (${travelers.length} travelers, ${owners.length} owners)`);
-    console.log(`✅ Properties: ${properties.length}`);
+    console.log(`✅ Properties: ${properties.length} (across ${cities.length} cities worldwide)`);
     console.log(`✅ Bookings:   ${bookings.length}`);
     console.log(`✅ Favorites:  ${favorites.length}`);
 
+    console.log('\n🌍 CITIES COVERED:');
+    console.log('='.repeat(70));
+    const citiesByRegion = {
+      'Americas': cities.filter(c => ['USA', 'Canada', 'Mexico'].includes(c.country)),
+      'Europe': cities.filter(c => ['UK', 'France', 'Italy', 'Spain', 'Netherlands', 'Germany', 'Czech Republic', 'Turkey'].includes(c.country)),
+      'Asia': cities.filter(c => ['Japan', 'Singapore', 'UAE', 'Thailand', 'China', 'South Korea', 'India', 'Indonesia'].includes(c.country)),
+      'Oceania': cities.filter(c => ['Australia', 'New Zealand'].includes(c.country)),
+      'Africa & Middle East': cities.filter(c => ['South Africa', 'Israel'].includes(c.country))
+    };
+
+    Object.entries(citiesByRegion).forEach(([region, regionCities]) => {
+      console.log(`\n${region}:`);
+      regionCities.forEach(city => {
+        const cityProps = properties.filter(p => p.city === city.name);
+        console.log(`   • ${city.name}, ${city.country} (${cityProps.length} properties)`);
+      });
+    });
+
     console.log('\n📋 TEST CREDENTIALS:');
-    console.log('='.repeat(60));
+    console.log('='.repeat(70));
     console.log('\n🧳 TRAVELERS:');
     travelers.forEach(user => {
       console.log(`   ${user.firstName} ${user.lastName}`);
@@ -398,10 +434,11 @@ async function seedDatabase() {
       console.log(`   🔑 password123\n`);
     });
 
-    console.log('='.repeat(60));
+    console.log('='.repeat(70));
     console.log('✨ Database seeding completed successfully!');
-    console.log('🚀 You can now login with any of the credentials above.');
-    console.log('='.repeat(60) + '\n');
+    console.log('🌍 Now featuring 100 properties across 30 cities worldwide!');
+    console.log('🚀 You can now browse properties or login with credentials above.');
+    console.log('='.repeat(70) + '\n');
     
     process.exit(0);
   } catch (error) {
@@ -411,4 +448,3 @@ async function seedDatabase() {
 }
 
 seedDatabase();
-

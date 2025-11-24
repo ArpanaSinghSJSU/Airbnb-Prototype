@@ -3,8 +3,8 @@
 ## Overview
 This lab extends the existing GoTour (formerly Airbnb Prototype) application with containerization, orchestration, asynchronous messaging, state management, and performance testing.
 
-**Timeline**: 22 days (3 weeks)  
-**Estimated Effort**: 54-72 hours  
+**Timeline**: 19 days (~2.5 weeks)  
+**Estimated Effort**: 48-64 hours  
 **Primary Goal**: Transform monolithic application into microservices architecture deployed on AWS
 
 ---
@@ -38,12 +38,12 @@ This lab extends the existing GoTour (formerly Airbnb Prototype) application wit
 - ❌ **AWS MSK**: Adds $150+/month cost, VPC complexity, different local/cloud setup
 
 **Local vs AWS Load Testing**:
-- 🏠 **Local Cluster** = Minikube/Kind on your Mac (localhost Kubernetes)
-- ☁️ **AWS Cluster** = EKS in the cloud (real production environment)
+- 🏠 **Local Development** = Docker Compose on your Mac (localhost)
+- ☁️ **AWS Cluster** = EKS in the cloud (production environment)
 - 🎯 **Strategy**: 
-  - Develop and test functionality locally (fast iteration)
-  - Run performance tests on AWS (realistic metrics for submission)
-  - JMeter can target either: `http://localhost:3001` or `http://<aws-lb-url>`
+  - Develop and test functionality locally with Docker Compose (fast iteration)
+  - Deploy and run all Kubernetes + performance tests on AWS EKS
+  - JMeter targets AWS LoadBalancer URL: `http://<aws-lb-url>`
 
 ---
 
@@ -671,53 +671,10 @@ Thread Groups:
 
 ---
 
-### Phase 5: Kubernetes Local Deployment (Days 13-15)
-**Goal**: Deploy on Minikube (local K8s cluster)
-
-**Tasks**:
-1. ✅ Install tools:
-   ```bash
-   brew install minikube kubectl helm
-   minikube start --cpus=4 --memory=8192
-   ```
-2. ✅ Create K8s manifests:
-   ```
-   k8s/
-   ├── mongodb-deployment.yaml
-   ├── kafka-deployment.yaml
-   ├── traveler-deployment.yaml
-   ├── owner-deployment.yaml
-   ├── property-deployment.yaml
-   ├── booking-deployment.yaml
-   ├── ai-agent-deployment.yaml
-   ├── configmap.yaml
-   ├── secrets.yaml
-   └── ingress.yaml
-   ```
-3. ✅ Deploy MongoDB:
-   ```bash
-   helm install mongodb bitnami/mongodb
-   ```
-4. ✅ Deploy Kafka:
-   ```bash
-   helm install kafka bitnami/kafka
-   ```
-5. ✅ Deploy application services:
-   ```bash
-   kubectl apply -f k8s/
-   ```
-6. ✅ Test on Minikube:
-   ```bash
-   minikube service traveler-service --url
-   ```
-7. ✅ Configure Horizontal Pod Autoscaler
-
-**Deliverable**: All services running on local Kubernetes (Minikube)
-
----
-
-### Phase 6: AWS EKS Deployment (Days 16-18)
+### Phase 5: AWS EKS Deployment (Days 13-15)
 **Goal**: Deploy to AWS cloud
+
+**Cost Information**: See [AWS_COST_BREAKDOWN.md](./AWS_COST_BREAKDOWN.md) for detailed pricing (~$23-26 for 5 days)
 
 **Tasks**:
 1. ✅ Install AWS tools:
@@ -725,14 +682,20 @@ Thread Groups:
    brew install awscli eksctl
    aws configure
    ```
-2. ✅ Create EKS cluster:
+2. ✅ Apply for AWS Educate credits (optional but recommended):
+   - Visit: https://aws.amazon.com/education/awseducate/
+   - Get $50-100 free credits
+   
+3. ✅ Create EKS cluster (use cheapest configuration):
    ```bash
    eksctl create cluster \
      --name gotour-cluster \
-     --region us-west-2 \
+     --region us-east-1 \
      --nodegroup-name standard-workers \
      --node-type t3.medium \
-     --nodes 3
+     --nodes 2 \
+     --nodes-min 2 \
+     --nodes-max 3
    ```
 3. ✅ Deploy MongoDB on EKS:
    ```bash
@@ -760,7 +723,7 @@ Thread Groups:
 
 ---
 
-### Phase 7: JMeter Performance Testing (Days 19-20)
+### Phase 6: JMeter Performance Testing (Days 16-17)
 **Goal**: Load test and analyze performance
 
 **Tasks**:
@@ -792,7 +755,7 @@ Thread Groups:
 
 ---
 
-### Phase 8: Documentation & Submission (Days 21-22)
+### Phase 7: Documentation & Submission (Days 18-19)
 **Goal**: Prepare final submission
 
 **Tasks**:
@@ -901,7 +864,7 @@ Thread Groups:
 4. **AI Agent**: ✅ **Separate service** (5th microservice)
 5. **AWS**: ✅ **Use AWS EKS** (easier - managed Kubernetes service)
 6. **Kafka**: ✅ **Self-hosted in K8s** (easier - no additional AWS service setup)
-7. **Testing**: ✅ **Both local (Minikube) and AWS EKS** (develop locally, validate on AWS)
+7. **Testing**: ✅ **Docker Compose locally, AWS EKS for K8s** (skip Minikube, go straight to AWS)
 
 ---
 
@@ -926,9 +889,9 @@ Thread Groups:
 ### Kubernetes Setup: Local → AWS
 
 **Development Environment (Local)**:
-- **Tool**: Minikube (easiest for Mac/Linux) or Docker Desktop Kubernetes
-- **Why**: Free, runs on laptop, perfect for development
-- **Setup**: `brew install minikube` → `minikube start`
+- **Tool**: Docker Compose
+- **Why**: Free, runs on laptop, perfect for microservices development
+- **Setup**: `docker-compose up` (no Kubernetes locally)
 
 **Production Environment (AWS)**:
 - **Tool**: AWS EKS (Elastic Kubernetes Service)
@@ -976,28 +939,31 @@ Thread Groups:
 
 **Decision**: ✅ **Use self-hosted Kafka in K8s** (simpler, works locally and on AWS)
 
-### Load Testing: Local vs AWS
+### Load Testing: Docker Compose vs AWS
 
-**"Local Cluster" Clarification**:
-- **Local Cluster** = Minikube/Kind running on your laptop (localhost)
-- **AWS Cluster** = EKS running on AWS infrastructure (cloud)
+**"Local Development" Clarification**:
+- **Local Development** = Docker Compose running on your laptop (for development only)
+- **AWS Cluster** = EKS running on AWS infrastructure (for K8s deployment and testing)
 
 **Recommended Approach**:
-1. **Phase 1 - Local Testing (Minikube)**:
-   - Test with 10-50 concurrent users
-   - Validate functionality
+1. **Phase 1 - Local Development (Docker Compose)**:
+   - Develop and validate microservices functionality
+   - Test API endpoints with Postman
    - Quick iteration and debugging
-   - **Limitation**: Limited by laptop resources (CPU/RAM)
+   - **Not for performance testing** - limited by laptop resources
 
-2. **Phase 2 - AWS Testing (EKS)**:
+2. **Phase 2 - AWS Deployment & Testing (EKS)**:
+   - Deploy complete Kubernetes cluster on AWS
    - Test with 100-500 concurrent users
    - Realistic production environment
-   - True scalability testing
+   - True scalability testing with HPA
    - Submit these results for grading
 
-**Why Both**:
-- Local: Fast development cycle
-- AWS: Real performance metrics for submission
+**Why Skip Minikube**:
+- ❌ Additional setup complexity
+- ❌ Limited resources for realistic testing
+- ✅ AWS EKS provides production-like environment
+- ✅ Saves 3 days of development time
 
 ---
 
@@ -1100,7 +1066,6 @@ mongosh
 **Need to Install**:
 - [ ] MongoDB: `brew install mongodb-community`
 - [ ] Docker Desktop: Download from docker.com
-- [ ] Minikube: `brew install minikube`
 - [ ] kubectl: `brew install kubectl`
 - [ ] Helm: `brew install helm`
 - [ ] AWS CLI: `brew install awscli`
@@ -1109,8 +1074,10 @@ mongosh
 
 **Install all at once:**
 ```bash
-brew install mongodb-community minikube kubectl helm awscli eksctl jmeter
+brew install mongodb-community kubectl helm awscli eksctl jmeter
 ```
+
+**Note**: Minikube not needed (skipping Phase 5 local K8s deployment)
 
 ---
 
@@ -1142,11 +1109,6 @@ docker logs <container-id>       # View logs
 kubectl get pods                 # List pods
 kubectl logs <pod-name>          # View logs
 kubectl describe pod <pod-name>  # Detailed info
-
-# Minikube
-minikube start                   # Start local cluster
-minikube dashboard               # Open dashboard
-minikube service <name> --url    # Get service URL
 
 # AWS EKS
 eksctl create cluster            # Create cluster

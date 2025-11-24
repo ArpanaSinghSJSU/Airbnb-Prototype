@@ -60,21 +60,21 @@ const AIAgent = ({ onClose, bookingId = null, bookings = [], onBookingChange = n
         
         if (wantsFullItinerary) {
           // Generate full itinerary
-          const interests = extractInterests(userMessage);
-          const cuisinePrefs = extractCuisinePreferences(userMessage);
-          
-          const result = await aiAgentAPI.generatePlan(bookingId, {
-            budget: 'medium',
+        const interests = extractInterests(userMessage);
+        const cuisinePrefs = extractCuisinePreferences(userMessage);
+        
+        const result = await aiAgentAPI.generatePlan(bookingId, {
+          budget: 'medium',
             interests: [...interests, ...cuisinePrefs],
-            dietary_restrictions: extractDietaryRestrictions(userMessage),
-            has_children: userMessage.toLowerCase().includes('kid') || userMessage.toLowerCase().includes('child') || userMessage.toLowerCase().includes('family'),
-            avoid_long_hikes: userMessage.toLowerCase().includes('no hike') || userMessage.toLowerCase().includes('avoid hike')
-          });
+          dietary_restrictions: extractDietaryRestrictions(userMessage),
+          has_children: userMessage.toLowerCase().includes('kid') || userMessage.toLowerCase().includes('child') || userMessage.toLowerCase().includes('family'),
+          avoid_long_hikes: userMessage.toLowerCase().includes('no hike') || userMessage.toLowerCase().includes('avoid hike')
+        });
 
-          if (result.data.success) {
-            response = formatItineraryText(result.data);
-          } else {
-            response = `❌ Sorry, I couldn't generate your itinerary. ${result.data.message || 'Please try again later.'}`;
+        if (result.data.success) {
+          response = formatItineraryText(result.data);
+        } else {
+          response = `❌ Sorry, I couldn't generate your itinerary. ${result.data.message || 'Please try again later.'}`;
           }
         } else {
           // Answer specific question without full itinerary

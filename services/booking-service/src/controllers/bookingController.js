@@ -1,5 +1,7 @@
 const Booking = require('../models/BookingModel');
 const Property = require('../models/PropertyModel');
+const User = require('../models/UserModel');
+const { publishMessage, TOPICS } = require('../utils/kafka');
 
 exports.createBooking = async (req, res) => {
   try {
@@ -42,6 +44,29 @@ exports.createBooking = async (req, res) => {
       totalPrice: parseFloat(totalPrice),
       specialRequests
     });
+
+    // ✅ Kafka Integration: Publish booking creation event
+    try {
+      await publishMessage(TOPICS.OWNER_NOTIFICATIONS, {
+        id: `notification-${booking._id}`,
+        bookingId: booking._id.toString(),
+        propertyId: propertyId,
+        travelerId: travelerId,
+        eventType: 'BOOKING_CREATED',
+        timestamp: new Date().toISOString(),
+        message: 'New booking request received',
+        bookingDetails: {
+          checkInDate: booking.checkInDate,
+          checkOutDate: booking.checkOutDate,
+          guests: booking.guests,
+          totalPrice: booking.totalPrice
+        }
+      });
+      console.log(`✅ Kafka: Published BOOKING_CREATED event for ${booking._id}`);
+    } catch (kafkaError) {
+      console.error('⚠️ Kafka publish error (non-blocking):', kafkaError.message);
+      // Don't fail the request if Kafka fails - booking is already created
+    }
 
     res.status(201).json({ 
       success: true, 
@@ -120,10 +145,12 @@ exports.acceptBooking = async (req, res) => {
       });
     }
 
+    // Check availability, excluding the current booking from the check
     const isAvailable = await Booking.checkAvailability(
       booking.propertyId._id,
       booking.checkInDate,
-      booking.checkOutDate
+      booking.checkOutDate,
+      booking._id // Exclude current booking
     );
 
     if (!isAvailable) {
@@ -134,6 +161,22 @@ exports.acceptBooking = async (req, res) => {
     }
 
     await booking.accept();
+
+    // ✅ Kafka Integration: Publish status update event
+    try {
+      await publishMessage(TOPICS.BOOKING_STATUS_UPDATES, {
+        id: `status-${booking._id}-${Date.now()}`,
+        bookingId: booking._id.toString(),
+        status: 'ACCEPTED',
+        updatedBy: 'owner',
+        ownerId: ownerId,
+        timestamp: new Date().toISOString(),
+        message: 'Booking has been accepted'
+      });
+      console.log(`✅ Kafka: Published BOOKING_ACCEPTED event for ${booking._id}`);
+    } catch (kafkaError) {
+      console.error('⚠️ Kafka publish error (non-blocking):', kafkaError.message);
+    }
 
     res.json({ 
       success: true, 
@@ -181,6 +224,23 @@ exports.cancelBooking = async (req, res) => {
 
     const { reason } = req.body;
     await booking.cancel(userRole, reason);
+
+    // ✅ Kafka Integration: Publish status update event
+    try {
+      await publishMessage(TOPICS.BOOKING_STATUS_UPDATES, {
+        id: `status-${booking._id}-${Date.now()}`,
+        bookingId: booking._id.toString(),
+        status: 'CANCELLED',
+        updatedBy: userRole,
+        userId: userId,
+        timestamp: new Date().toISOString(),
+        reason: reason,
+        message: `Booking cancelled by ${userRole}`
+      });
+      console.log(`✅ Kafka: Published BOOKING_CANCELLED event for ${booking._id}`);
+    } catch (kafkaError) {
+      console.error('⚠️ Kafka publish error (non-blocking):', kafkaError.message);
+    }
 
     res.json({ 
       success: true, 

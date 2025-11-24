@@ -1,11 +1,13 @@
 import axios from 'axios';
 
 // Microservices URLs
-const TRAVELER_SERVICE_URL = process.env.REACT_APP_TRAVELER_SERVICE_URL || 'http://localhost:3001';
-const OWNER_SERVICE_URL = process.env.REACT_APP_OWNER_SERVICE_URL || 'http://localhost:3002';
-const PROPERTY_SERVICE_URL = process.env.REACT_APP_PROPERTY_SERVICE_URL || 'http://localhost:3003';
-const BOOKING_SERVICE_URL = process.env.REACT_APP_BOOKING_SERVICE_URL || 'http://localhost:3004';
-const AI_AGENT_URL = process.env.REACT_APP_AI_AGENT_URL || 'http://localhost:8000';
+// Empty string = use same origin (nginx will proxy to backend services)
+// This works for both local development (with port-forwarding) and production (with Ingress/LoadBalancer)
+const TRAVELER_SERVICE_URL = process.env.REACT_APP_TRAVELER_SERVICE_URL || '';
+const OWNER_SERVICE_URL = process.env.REACT_APP_OWNER_SERVICE_URL || '';
+const PROPERTY_SERVICE_URL = process.env.REACT_APP_PROPERTY_SERVICE_URL || '';
+const BOOKING_SERVICE_URL = process.env.REACT_APP_BOOKING_SERVICE_URL || '';
+const AI_AGENT_URL = process.env.REACT_APP_AI_AGENT_URL || '';
 
 // Create axios instances for each service
 const createServiceInstance = (baseURL) => {

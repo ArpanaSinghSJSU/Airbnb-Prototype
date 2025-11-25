@@ -5,12 +5,26 @@ const User = require('../models/UserModel');
 exports.createProperty = async (req, res) => {
   try {
     const ownerId = req.user.userId;
-    const { name, propertyType, description, location, pricePerNight, bedrooms, bathrooms, maxGuests, amenities } = req.body;
+    const { 
+      name, 
+      propertyType, 
+      description, 
+      city, 
+      state, 
+      country, 
+      zipcode, 
+      address,
+      pricePerNight, 
+      bedrooms, 
+      bathrooms, 
+      maxGuests, 
+      amenities 
+    } = req.body;
 
-    if (!name || !location || !pricePerNight || !description) {
+    if (!name || !city || !state || !pricePerNight || !description) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Name, location, description, and price are required' 
+        message: 'Name, city, state, description, and price are required' 
       });
     }
 
@@ -39,7 +53,11 @@ exports.createProperty = async (req, res) => {
       name,
       propertyType: propertyType || 'apartment',
       description,
-      location,
+      city,
+      state,
+      country: country || 'USA',
+      zipcode,
+      address,
       pricePerNight: parseFloat(pricePerNight),
       bedrooms: parseInt(bedrooms) || 1,
       bathrooms: parseInt(bathrooms) || 1,

@@ -2,7 +2,7 @@
 Data models and schemas for AI Concierge Agent
 """
 from typing import List, Optional, Dict
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from datetime import date
 from enum import Enum
 
@@ -48,6 +48,15 @@ class BookingContext(BaseModel):
     start_date: date = Field(..., description="Check-in date")
     end_date: date = Field(..., description="Check-out date")
     guests: int = Field(..., description="Number of guests")
+    location: Optional[str] = Field(default=None, description="Full location string (computed from city, state, country)")
+    
+    @model_validator(mode='after')
+    def compute_location(self):
+        """Compute location from individual fields if not provided"""
+        if not self.location:
+            parts = [self.city, self.state, self.country]
+            self.location = ', '.join([p for p in parts if p])
+        return self
 
 class AgentRequest(BaseModel):
     """Request to AI Concierge Agent"""

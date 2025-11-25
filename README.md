@@ -290,3 +290,45 @@ To deactivate Python conda environment:
 ```bash
 conda deactivate 
 ```
+
+---
+
+## 📊 Performance Testing (Phase 6)
+
+### JMeter Load Testing
+
+This project includes comprehensive JMeter performance tests for all microservices.
+
+**Quick Start**:
+```bash
+# Run a quick test (100 users)
+./jmeter/scripts/run-single-test.sh 1 100
+
+# Run full test suite (5 plans × 5 loads)
+./jmeter/scripts/run-all-tests.sh
+
+# Analyze results
+./jmeter/scripts/analyze-results.sh
+```
+
+**Test Plans Available**:
+1. Authentication Test (Login/Signup/Session)
+2. Property Search Test (Search/Filters/Details)
+3. Booking Test (Create/Update/Kafka Events)
+4. Owner Management Test (Dashboard/Analytics)
+5. AI Agent Test (Trip Planning)
+
+**Load Levels**: 100, 200, 300, 400, 500 concurrent users
+
+**Documentation**:
+- Full Guide: `jmeter/README.md`
+- Quick Start: `jmeter/QUICK_START.md`
+- Commands: `jmeter/COMMANDS.md`
+- Performance Analysis: `docs/PHASE6_JMETER_PERFORMANCE.md`
+- Completion Report: `docs/PHASE6_COMPLETE.md`
+
+**View Results**:
+```bash
+# Open HTML performance report
+open jmeter/reports/*-report/index.html
+```

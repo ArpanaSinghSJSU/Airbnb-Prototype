@@ -109,7 +109,7 @@ const MyProperties = () => {
                 <div className="relative h-64 bg-gray-200 rounded-t-xl overflow-hidden">
                   {property.photos && property.photos.length > 0 ? (
                     <img
-                      src={`http://localhost:3003${property.photos[0]}`}
+                      src={property.photos[0]}
                       alt={property.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -123,7 +123,7 @@ const MyProperties = () => {
                   )}
                   <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded-full shadow">
                     <span className="text-sm font-semibold text-airbnb-dark">
-                      ${property.price_per_night}/night
+                      ${property.pricePerNight}/night
                     </span>
                   </div>
                 </div>
@@ -133,14 +133,14 @@ const MyProperties = () => {
                   <p className="text-sm text-airbnb-gray mt-1">
                     📍 {property.city && property.state 
                       ? `${property.city}, ${property.state}` 
-                      : 'Location'}
+                      : property.location || 'Location'}
                   </p>
                   <p className="text-sm text-airbnb-gray mt-1">
-                    {property.type && `${property.type} • `}
+                    {property.propertyType && `${property.propertyType} • `}
                     {property.bedrooms} bed • {property.bathrooms} bath
                   </p>
                   <p className="text-sm text-airbnb-gray mt-1">
-                    👥 Up to {property.max_guests} guests
+                    👥 Up to {property.maxGuests} guests
                   </p>
 
                   <div className="mt-4 pt-4 border-t flex space-x-2">

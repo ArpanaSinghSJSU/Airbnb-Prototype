@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../redux/slices/authSlice';
 import { propertyAPI, bookingAPI, favoritesAPI } from '../../services/api';
-import Navbar from '../../components/shared/Navbar';
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -127,10 +126,51 @@ const PropertyDetails = () => {
     }
   };
 
+  // Simple Public Navigation Component
+  const PublicNav = () => (
+    <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
+          <Link to="/" className="flex items-center">
+            <span className="text-3xl font-bold text-airbnb-pink">GoTour</span>
+          </Link>
+          <div className="flex items-center space-x-4">
+            {user ? (
+              <>
+                <span className="text-gray-700">Welcome, {user.firstName}!</span>
+                <Link
+                  to={`/${user.role}/dashboard`}
+                  className="px-4 py-2 text-airbnb-pink hover:bg-gray-50 rounded-full transition"
+                >
+                  Dashboard
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-full transition"
+                >
+                  Log in
+                </Link>
+                <Link
+                  to="/signup"
+                  className="px-4 py-2 bg-airbnb-pink text-white rounded-full hover:bg-red-600 transition"
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar />
+        <PublicNav />
         <div className="flex items-center justify-center h-96">
           <div className="text-xl text-airbnb-gray">Loading...</div>
         </div>
@@ -141,7 +181,7 @@ const PropertyDetails = () => {
   if (!property) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar />
+        <PublicNav />
         <div className="max-w-7xl mx-auto px-4 py-16 text-center">
           <h2 className="text-2xl font-bold text-airbnb-dark">Property not found</h2>
           <button
@@ -157,7 +197,7 @@ const PropertyDetails = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      <PublicNav />
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Back Button */}
         <button
@@ -176,7 +216,7 @@ const PropertyDetails = () => {
             {property.photos && property.photos.length > 0 ? (
               <>
                 <img
-                  src={`http://localhost:3003${property.photos[0]}`}
+                  src={property.photos[0]}
                   alt={property.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
@@ -195,7 +235,7 @@ const PropertyDetails = () => {
               <div key={idx} className="h-44 bg-gray-200 rounded-xl overflow-hidden relative">
                 {photo ? (
                   <img
-                    src={`http://localhost:3003${photo}`}
+                    src={photo}
                     alt={`${property.name} ${idx + 2}`}
                     className="w-full h-full object-cover"
                     onError={(e) => {

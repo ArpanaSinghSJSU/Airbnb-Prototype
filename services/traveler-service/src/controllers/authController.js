@@ -178,7 +178,7 @@ exports.checkAuth = async (req, res) => {
       lastName: user.lastName,
       email: user.email,
       role: user.role,
-      profile_picture: user.profilePicture
+      profilePicture: user.profilePicture
     };
 
     res.json({ 

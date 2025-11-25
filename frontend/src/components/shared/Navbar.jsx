@@ -75,10 +75,10 @@ const Navbar = () => {
                 to={profileLink}
                 className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition"
               >
-                {user?.profile_picture ? (
+                {user?.profilePicture ? (
                   <img
-                    src={`http://localhost:${user.role === 'traveler' ? 3001 : 3002}${user.profile_picture}`}
-                    alt={user.name}
+                    src={user.profilePicture}
+                    alt={`${user.firstName} ${user.lastName}`}
                     className="w-8 h-8 rounded-full object-cover"
                     onError={(e) => {
                       e.target.style.display = 'none';
@@ -88,12 +88,12 @@ const Navbar = () => {
                 ) : null}
                 <div 
                   className="w-8 h-8 bg-airbnb-pink text-white rounded-full flex items-center justify-center font-semibold"
-                  style={{ display: user?.profile_picture ? 'none' : 'flex' }}
+                  style={{ display: user?.profilePicture ? 'none' : 'flex' }}
                 >
-                  {user?.name?.charAt(0).toUpperCase()}
+                  {user?.firstName?.charAt(0).toUpperCase() || 'U'}
                 </div>
                 <span className="hidden sm:block text-sm font-medium text-airbnb-dark">
-                  {user?.name}
+                  {user?.firstName} {user?.lastName}
                 </span>
               </Link>
             </div>

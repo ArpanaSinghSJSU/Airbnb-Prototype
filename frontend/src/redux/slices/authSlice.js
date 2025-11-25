@@ -5,7 +5,7 @@ import { authAPI } from '../../services/api';
 const initialState = {
   user: null,
   token: localStorage.getItem('token') || null,
-  loading: false,
+  loading: !!localStorage.getItem('token'), // Set to true if token exists (need to verify it)
   error: null,
   isAuthenticated: false,
 };

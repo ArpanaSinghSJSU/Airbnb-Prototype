@@ -37,7 +37,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files (uploads)
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads/traveler-profiles', express.static('uploads/profiles'));
 
 // Health check
 app.get('/health', (req, res) => {

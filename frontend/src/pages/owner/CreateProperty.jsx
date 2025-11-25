@@ -7,6 +7,7 @@ const CreateProperty = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     name: '',
     city: '',
@@ -47,10 +48,61 @@ const CreateProperty = () => {
     'Pets allowed',
   ];
 
+  const validateField = (name, value) => {
+    let error = '';
+    
+    switch (name) {
+      case 'name':
+        if (!value || value.trim() === '') {
+          error = 'Property name is required';
+        } else if (value.length < 3) {
+          error = 'Property name must be at least 3 characters';
+        }
+        break;
+      case 'city':
+        if (!value || value.trim() === '') {
+          error = 'City is required';
+        }
+        break;
+      case 'state':
+        if (!value || value.trim() === '') {
+          error = 'State is required';
+        }
+        break;
+      case 'description':
+        if (!value || value.trim() === '') {
+          error = 'Description is required';
+        } else if (value.length < 20) {
+          error = 'Description must be at least 20 characters';
+        }
+        break;
+      case 'price_per_night':
+        if (!value || value === '') {
+          error = 'Price is required';
+        } else if (parseFloat(value) <= 0) {
+          error = 'Price must be greater than 0';
+        }
+        break;
+      default:
+        break;
+    }
+    
+    return error;
+  };
+
   const handleChange = (e) => {
+    const { name, value } = e.target;
+    
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
+    });
+    
+    // Validate field in real-time
+    const error = validateField(name, value);
+    setErrors({
+      ...errors,
+      [name]: error,
     });
   };
 
@@ -74,10 +126,32 @@ const CreateProperty = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate all fields before submission
+    const newErrors = {};
+    ['name', 'city', 'state', 'description', 'price_per_night'].forEach((field) => {
+      const error = validateField(field, formData[field]);
+      if (error) newErrors[field] = error;
+    });
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setMessage({
+        type: 'error',
+        text: 'Please fix the errors below before submitting',
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     setLoading(true);
     setMessage({ type: '', text: '' });
 
     try {
+      // Log form data for debugging
+      console.log('📋 Form Data:', formData);
+      console.log('📋 Property Type being sent:', formData.type);
+      
       const propertyData = new FormData();
       propertyData.append('name', formData.name);
       propertyData.append('city', formData.city);
@@ -85,17 +159,19 @@ const CreateProperty = () => {
       propertyData.append('country', formData.country);
       propertyData.append('zipcode', formData.zipcode);
       propertyData.append('address', formData.address);
-      propertyData.append('propertyType', formData.type);
+      propertyData.append('propertyType', formData.type); // Should be lowercase like 'apartment'
       propertyData.append('pricePerNight', formData.price_per_night);
-      propertyData.append('bedrooms', formData.bedrooms);
-      propertyData.append('bathrooms', formData.bathrooms);
-      propertyData.append('maxGuests', formData.max_guests);
+      propertyData.append('bedrooms', formData.bedrooms || '0');
+      propertyData.append('bathrooms', formData.bathrooms || '0');
+      propertyData.append('maxGuests', formData.max_guests || '1');
       propertyData.append('description', formData.description);
       propertyData.append('amenities', JSON.stringify(formData.amenities));
 
       photos.forEach((photo) => {
         propertyData.append('photos', photo);
       });
+      
+      console.log('🚀 Sending property data to backend...');
 
       const response = await ownerAPI.createProperty(propertyData);
       if (response.data.success) {
@@ -103,10 +179,14 @@ const CreateProperty = () => {
         setTimeout(() => navigate('/owner/properties'), 2000);
       }
     } catch (error) {
+      console.error('❌ Create property error:', error);
+      console.error('❌ Error response:', error.response?.data);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to add property';
       setMessage({
         type: 'error',
-        text: error.response?.data?.message || 'Failed to add property',
+        text: `Error: ${errorMessage}`,
       });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false);
     }
@@ -164,8 +244,13 @@ const CreateProperty = () => {
                     onChange={handleChange}
                     required
                     placeholder="Beautiful Downtown Apartment"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent"
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent ${
+                      errors.name ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   />
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                  )}
                 </div>
 
                 <div>
@@ -179,8 +264,13 @@ const CreateProperty = () => {
                     onChange={handleChange}
                     required
                     placeholder="e.g., Miami"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent"
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent ${
+                      errors.city ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   />
+                  {errors.city && (
+                    <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+                  )}
                 </div>
 
                 <div>
@@ -194,8 +284,13 @@ const CreateProperty = () => {
                     onChange={handleChange}
                     required
                     placeholder="e.g., FL"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent"
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent ${
+                      errors.state ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   />
+                  {errors.state && (
+                    <p className="mt-1 text-sm text-red-600">{errors.state}</p>
+                  )}
                 </div>
 
                 <div>
@@ -273,8 +368,13 @@ const CreateProperty = () => {
                     min="0"
                     step="0.01"
                     placeholder="100.00"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent"
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent ${
+                      errors.price_per_night ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   />
+                  {errors.price_per_night && (
+                    <p className="mt-1 text-sm text-red-600">{errors.price_per_night}</p>
+                  )}
                 </div>
 
                 <div>
@@ -334,8 +434,13 @@ const CreateProperty = () => {
                 required
                 rows="6"
                 placeholder="Describe your property, its unique features, nearby attractions, and what makes it special..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-airbnb-pink focus:border-transparent ${
+                  errors.description ? 'border-red-500' : 'border-gray-300'
+                }`}
               ></textarea>
+              {errors.description && (
+                <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+              )}
             </div>
 
             {/* Amenities */}

@@ -14,6 +14,13 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Set environment variables to empty strings (use relative URLs)
+ENV REACT_APP_TRAVELER_SERVICE_URL=""
+ENV REACT_APP_OWNER_SERVICE_URL=""
+ENV REACT_APP_PROPERTY_SERVICE_URL=""
+ENV REACT_APP_BOOKING_SERVICE_URL=""
+ENV REACT_APP_AI_AGENT_URL=""
+
 # Build the React app
 RUN npm run build
 

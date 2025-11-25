@@ -1,6 +1,6 @@
 # GoTour Airbnb Prototype - Access URLs
 
-Last Updated: 2025-11-23
+Last Updated: 2025-11-25
 
 ## ✅ AWS EKS with ALB Ingress - FULLY WORKING!
 
@@ -8,12 +8,12 @@ Last Updated: 2025-11-23
 
 **🌐 Main Application:**
 ```
-http://k8s-gotour-gotourin-b69db2909a-1119124010.us-east-1.elb.amazonaws.com
+http://k8s-gotour-gotourin-b69db2909a-1261558413.us-east-1.elb.amazonaws.com
 ```
 
 **🔐 Login Page:**
 ```
-http://k8s-gotour-gotourin-b69db2909a-1119124010.us-east-1.elb.amazonaws.com/login
+http://k8s-gotour-gotourin-b69db2909a-1261558413.us-east-1.elb.amazonaws.com/login
 ```
 
 ### ✅ What's Working:
@@ -32,13 +32,16 @@ http://k8s-gotour-gotourin-b69db2909a-1119124010.us-east-1.elb.amazonaws.com/log
 - All services accessible through single domain
 - No nginx proxy needed (Ingress handles routing!)
 
-### 📊 Target Groups (All Healthy):
-- Frontend: 2/2 healthy
-- Traveler Service: 2/2 healthy
-- Owner Service: 2/2 healthy
-- Property Service: 2/2 healthy
-- Booking Service: 2/2 healthy
+### 📊 Target Groups:
+- Frontend: 1/1 healthy
+- Traveler Service: 1/1 healthy
+- Owner Service: 1/1 healthy
+- Property Service: 1/1 healthy
+- Booking Service: 1/1 healthy
 - AI Agent: 1/1 healthy
+- MongoDB: 1/1 healthy
+- Kafka: Temporarily disabled (resource optimization)
+- Zookeeper: Temporarily disabled (resource optimization)
 
 ---
 
@@ -64,7 +67,7 @@ http://k8s-gotour-gotourin-b69db2909a-1119124010.us-east-1.elb.amazonaws.com/log
 
 ## API Endpoints (All Working!)
 
-Base URL: `http://k8s-gotour-gotourin-b69db2909a-1119124010.us-east-1.elb.amazonaws.com`
+Base URL: `http://k8s-gotour-gotourin-b69db2909a-1261558413.us-east-1.elb.amazonaws.com`
 
 ### Authentication (Traveler Service)
 - `POST /auth/login` - User login
@@ -72,11 +75,14 @@ Base URL: `http://k8s-gotour-gotourin-b69db2909a-1119124010.us-east-1.elb.amazon
 - `GET /auth/check` - Check auth status
 
 ### Properties (Property Service)
-- `GET /properties/search` - Search properties
+- `GET /properties/search` - Search properties (100 properties available!)
 - `GET /properties/:id` - Get property details
 - `POST /properties` - Create property (owner)
 - `PUT /properties/:id` - Update property (owner)
 - `DELETE /properties/:id` - Delete property (owner)
+- `GET /favorites` - Get user favorites
+- `POST /favorites` - Add to favorites
+- `DELETE /favorites/:propertyId` - Remove from favorites
 
 ### Bookings (Booking Service)
 - `GET /bookings` - Get all bookings
@@ -104,6 +110,8 @@ Base URL: `http://k8s-gotour-gotourin-b69db2909a-1119124010.us-east-1.elb.amazon
 - EBS Volumes: ~$0.40/day
 
 **5-Day Total:** ~$26.25 (within budget!)
+
+**Note:** Kafka and Zookeeper temporarily disabled to optimize resource usage on current cluster.
 
 ---
 
@@ -165,12 +173,21 @@ make eks-seed
 
 ## Browser Testing
 
-1. Open: http://k8s-gotour-gotourin-b69db2909a-1119124010.us-east-1.elb.amazonaws.com
+1. Open: http://k8s-gotour-gotourin-b69db2909a-1261558413.us-east-1.elb.amazonaws.com
 2. Click "Login"
 3. Use test credentials (e.g., john.traveler@example.com / password123)
-4. Explore the application!
+4. Browse 100 properties across 30 global cities!
+5. Create bookings and explore features!
 
 **Note:** Make sure you're not connected to a VPN that might block AWS ELB domains.
+
+### ✅ What to Test:
+- Login with traveler credentials
+- Search properties by city, price, guests
+- View property details
+- Create a booking
+- Login as owner and view dashboard
+- Manage properties (owner account)
 
 ---
 
@@ -234,5 +251,7 @@ If the URL is not accessible:
 ---
 
 **Status:** ✅ Fully Operational  
-**Last Tested:** 2025-11-23  
+**Last Tested:** 2025-11-25  
 **Deployment Type:** AWS EKS with ALB Ingress
+**Database:** 100 properties, 8 users, 6 bookings  
+**URL Updated:** 2025-11-25 (New ALB after ingress recreation)

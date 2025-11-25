@@ -35,7 +35,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads/owner-profiles', express.static('uploads/profiles'));
 
 // Health check
 app.get('/health', (req, res) => {

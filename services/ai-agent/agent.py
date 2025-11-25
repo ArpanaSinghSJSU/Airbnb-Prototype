@@ -13,7 +13,7 @@ from models import (
     AgentRequest, AgentResponse, DayPlan, ActivityCard, 
     RestaurantCard, PriceTier, TravelerPreferences
 )
-from utils import WeatherService, PackingListGenerator, extract_location_city, calculate_trip_length
+from utils import WeatherService, PackingListGenerator, calculate_trip_length
 
 class AIConciergeAgent:
     """
@@ -40,7 +40,8 @@ class AIConciergeAgent:
             
             # Calculate trip details
             trip_length = calculate_trip_length(booking.start_date, booking.end_date)
-            location_city = extract_location_city(booking.location)
+            location_city = booking.city  # Use city from booking context
+            location_full = f"{booking.city}, {booking.state}, {booking.country}"
             
             # Get weather forecast
             weather_forecast = WeatherService.get_weather_forecast(
@@ -78,7 +79,9 @@ class AIConciergeAgent:
             )
         
         except Exception as e:
+            import traceback
             print(f"Agent error: {e}")
+            print(f"Full traceback: {traceback.format_exc()}")
             return AgentResponse(
                 success=False,
                 message=f"Error generating itinerary: {str(e)}",
@@ -161,13 +164,14 @@ class AIConciergeAgent:
         
         # Prepare context for LLM
         trip_length = calculate_trip_length(booking.start_date, booking.end_date)
-        location = extract_location_city(booking.location)
+        location = booking.city
+        location_full = f"{booking.city}, {booking.state}, {booking.country}"
         
         # Build prompt with all context
-        system_prompt = f"""You are an expert travel concierge creating a {trip_length}-day itinerary for {location}.
+        system_prompt = f"""You are an expert travel concierge creating a {trip_length}-day itinerary for {location_full}.
 
 Booking Details:
-- Location: {booking.location}
+- Location: {location_full}
 - Dates: {booking.start_date} to {booking.end_date}
 - Guests: {booking.guests}
 
@@ -382,7 +386,8 @@ Format your response as a structured JSON-like output that I can parse."""
             tips.append(f"Restaurant recommendations include {dietary_str} options.")
         
         # General tips
-        tips.append(f"Book activities in advance during peak season in {booking.location}.")
+        location_name = f"{booking.city}, {booking.state}"
+        tips.append(f"Book activities in advance during peak season in {location_name}.")
         tips.append("Download offline maps in case of limited connectivity.")
         
         return tips

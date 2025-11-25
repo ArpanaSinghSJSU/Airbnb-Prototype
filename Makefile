@@ -1,7 +1,7 @@
 # GoTour Airbnb Prototype - Makefile
 # Simplified commands for development
 
-.PHONY: help setup fresh-start server frontend stop-all stop-backend stop-frontend health logs clean seed kafka-status kafka-topics kafka-logs kafka-test k8s-deploy k8s-status k8s-logs k8s-cleanup k8s-test eks-push eks-update eks-deploy eks-redeploy eks-all eks-status
+.PHONY: help setup fresh-start server frontend stop-all stop-backend stop-frontend health logs clean seed kafka-status kafka-topics kafka-logs kafka-test k8s-deploy k8s-status k8s-logs k8s-cleanup k8s-test eks-push eks-update eks-deploy eks-redeploy eks-all eks-status jmeter-test jmeter-test-all jmeter-analyze jmeter-report jmeter-quick jmeter-auth jmeter-property jmeter-booking jmeter-owner jmeter-ai
 
 # Default target - show help
 help:
@@ -51,6 +51,23 @@ help:
 	@echo "  make eks-redeploy    - Delete and redeploy application to EKS"
 	@echo "  make eks-all         - Complete EKS deployment (push + update + deploy)"
 	@echo "  make eks-status      - Check deployment status on EKS"
+	@echo ""
+	@echo "📊 JMeter Performance Testing:"
+	@echo "  make jmeter-quick             - Quick test (auth, 50 users)"
+	@echo "  make jmeter-test TEST=1 USERS=100  - Run specific test"
+	@echo "  make jmeter-auth USERS=100    - Test authentication"
+	@echo "  make jmeter-property USERS=100 - Test property search"
+	@echo "  make jmeter-booking USERS=100 - Test bookings"
+	@echo "  make jmeter-owner USERS=100   - Test owner management"
+	@echo "  make jmeter-ai USERS=100      - Test AI agent"
+	@echo "  make jmeter-test-all          - Run all tests (all loads)"
+	@echo "  make jmeter-analyze           - Analyze test results"
+	@echo "  make jmeter-report            - Open HTML report"
+	@echo ""
+	@echo "📋 Lab 2 Complete Testing:"
+	@echo "  make jmeter-lab2-run          - Run ALL Lab 2 tests (25 tests)"
+	@echo "  make jmeter-lab2-analyze      - Generate Lab 2 analysis report"
+	@echo "  make jmeter-lab2-complete     - Run tests + Generate report"
 	@echo ""
 
 # ============================================
@@ -791,3 +808,270 @@ eks-seed:
 	@chmod +x scripts/aws/seed-eks-mongo.sh
 	@# Run the seed script
 	@./scripts/aws/seed-eks-mongo.sh
+
+# ============================================
+# 9. JMETER PERFORMANCE TESTING (PHASE 6)
+# ============================================
+
+# Quick test - fast validation
+jmeter-quick:
+	@echo "⚡ Running quick JMeter test (Authentication, 50 users)..."
+	@echo ""
+	@chmod +x jmeter/scripts/run-single-test.sh
+	@./jmeter/scripts/run-single-test.sh 1 50
+
+# Generic test runner with parameters
+# Usage: make jmeter-test TEST=1 USERS=100
+jmeter-test:
+	@if [ -z "$(TEST)" ] || [ -z "$(USERS)" ]; then \
+		echo "❌ Error: Missing parameters!"; \
+		echo ""; \
+		echo "Usage: make jmeter-test TEST=<1-5> USERS=<number>"; \
+		echo ""; \
+		echo "Test numbers:"; \
+		echo "  1 - Authentication"; \
+		echo "  2 - Property Search"; \
+		echo "  3 - Booking"; \
+		echo "  4 - Owner Management"; \
+		echo "  5 - AI Agent"; \
+		echo ""; \
+		echo "Example: make jmeter-test TEST=2 USERS=200"; \
+		echo ""; \
+		exit 1; \
+	fi
+	@echo "🧪 Running JMeter test #$(TEST) with $(USERS) users..."
+	@echo ""
+	@chmod +x jmeter/scripts/run-single-test.sh
+	@./jmeter/scripts/run-single-test.sh $(TEST) $(USERS)
+
+# Specific test types with user count parameter
+# Usage: make jmeter-auth USERS=100
+jmeter-auth:
+	@echo "🔐 Running Authentication Test..."
+	@chmod +x jmeter/scripts/run-single-test.sh
+	@./jmeter/scripts/run-single-test.sh 1 $(or $(USERS),100)
+
+jmeter-property:
+	@echo "🏡 Running Property Search Test..."
+	@chmod +x jmeter/scripts/run-single-test.sh
+	@./jmeter/scripts/run-single-test.sh 2 $(or $(USERS),100)
+
+jmeter-booking:
+	@echo "📅 Running Booking Test..."
+	@chmod +x jmeter/scripts/run-single-test.sh
+	@./jmeter/scripts/run-single-test.sh 3 $(or $(USERS),100)
+
+jmeter-owner:
+	@echo "🏠 Running Owner Management Test..."
+	@chmod +x jmeter/scripts/run-single-test.sh
+	@./jmeter/scripts/run-single-test.sh 4 $(or $(USERS),100)
+
+jmeter-ai:
+	@echo "🤖 Running AI Agent Test..."
+	@chmod +x jmeter/scripts/run-single-test.sh
+	@./jmeter/scripts/run-single-test.sh 5 $(or $(USERS),100)
+
+# Run all tests with all load levels (5 tests × 5 loads = 25 tests)
+jmeter-test-all:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║          🧪 Running Complete JMeter Test Suite            ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "⚠️  This will run 25 tests (5 plans × 5 load levels)"
+	@echo "⏱️  Estimated time: 2-3 hours"
+	@echo ""
+	@echo "Press Ctrl+C within 5 seconds to cancel..."
+	@sleep 5
+	@echo ""
+	@chmod +x jmeter/scripts/run-all-tests.sh
+	@./jmeter/scripts/run-all-tests.sh
+
+# Analyze all test results
+jmeter-analyze:
+	@echo "📊 Analyzing JMeter test results..."
+	@echo ""
+	@chmod +x jmeter/scripts/analyze-results.sh
+	@./jmeter/scripts/analyze-results.sh
+
+# Open HTML report in browser
+jmeter-report:
+	@echo "📈 Opening latest JMeter HTML report..."
+	@echo ""
+	@LATEST_REPORT=$$(ls -t jmeter/reports/*-report/index.html 2>/dev/null | head -1); \
+	if [ -n "$$LATEST_REPORT" ]; then \
+		echo "Opening: $$LATEST_REPORT"; \
+		open "$$LATEST_REPORT" 2>/dev/null || xdg-open "$$LATEST_REPORT" 2>/dev/null || echo "Please open $$LATEST_REPORT manually"; \
+	else \
+		echo "❌ No reports found!"; \
+		echo "Run a test first: make jmeter-quick"; \
+	fi
+
+# Show JMeter help
+jmeter-help:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║          📊 JMeter Performance Testing Commands            ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "Quick Commands:"
+	@echo "  make jmeter-quick                - Quick test (50 users)"
+	@echo ""
+	@echo "Specific Tests (with custom user count):"
+	@echo "  make jmeter-auth USERS=200       - Authentication test"
+	@echo "  make jmeter-property USERS=300   - Property search test"
+	@echo "  make jmeter-booking USERS=250    - Booking test"
+	@echo "  make jmeter-owner USERS=150      - Owner management test"
+	@echo "  make jmeter-ai USERS=100         - AI agent test"
+	@echo ""
+	@echo "Generic Test Runner:"
+	@echo "  make jmeter-test TEST=2 USERS=500"
+	@echo ""
+	@echo "Test Numbers:"
+	@echo "  1 - Authentication"
+	@echo "  2 - Property Search"
+	@echo "  3 - Booking"
+	@echo "  4 - Owner Management"
+	@echo "  5 - AI Agent"
+	@echo ""
+	@echo "Full Test Suite:"
+	@echo "  make jmeter-test-all             - Run all 25 tests (2-3 hours)"
+	@echo ""
+	@echo "Results & Analysis:"
+	@echo "  make jmeter-analyze              - Analyze all results"
+	@echo "  make jmeter-report               - Open HTML report"
+	@echo ""
+	@echo "Common Load Levels:"
+	@echo "  50   - Quick test"
+	@echo "  100  - Baseline"
+	@echo "  200  - Normal load"
+	@echo "  300  - Heavy load"
+	@echo "  400  - Stress test"
+	@echo "  500  - Max capacity"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make jmeter-quick                    # Fast validation"
+	@echo "  make jmeter-auth USERS=300           # Auth with 300 users"
+	@echo "  make jmeter-test TEST=3 USERS=400    # Booking with 400 users"
+	@echo ""
+	@echo "Documentation:"
+	@echo "  less jmeter/QUICK_START.md"
+	@echo "  less jmeter/README.md"
+	@echo ""
+
+# Clean JMeter results
+jmeter-clean:
+	@echo "🧹 Cleaning JMeter results..."
+	@echo ""
+	@echo "⚠️  This will delete all test results and reports!"
+	@echo "Press Ctrl+C within 3 seconds to cancel..."
+	@sleep 3
+	@echo ""
+	@rm -rf jmeter/results/* 2>/dev/null || true
+	@rm -rf jmeter/reports/* 2>/dev/null || true
+	@echo "✅ JMeter results cleaned!"
+
+# List recent test results
+jmeter-results:
+	@echo "📋 Recent JMeter Test Results:"
+	@echo "══════════════════════════════════════════════════════════"
+	@echo ""
+	@echo "CSV Results:"
+	@ls -lht jmeter/results/*.csv 2>/dev/null | head -10 || echo "No results found"
+	@echo ""
+	@echo "HTML Reports:"
+	@ls -dt jmeter/reports/*-report 2>/dev/null | head -10 || echo "No reports found"
+	@echo ""
+
+# ============================================
+# LAB 2 COMPLETE TESTING
+# ============================================
+
+# Run all Lab 2 required tests (100, 200, 300, 400, 500 users)
+jmeter-lab2-run:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║     Lab 2 Complete Testing - All Required Load Levels     ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "This will run:"
+	@echo "  - 5 test plans"
+	@echo "  - 5 load levels (100, 200, 300, 400, 500 users)"
+	@echo "  - Total: 25 tests"
+	@echo "  - Estimated time: 2-3 hours"
+	@echo ""
+	@chmod +x jmeter/scripts/run-lab2-tests.sh
+	@./jmeter/scripts/run-lab2-tests.sh
+
+# Generate Lab 2 performance analysis report
+jmeter-lab2-analyze:
+	@echo "📊 Generating Lab 2 Performance Analysis Report..."
+	@echo ""
+	@chmod +x jmeter/scripts/generate-lab2-analysis.sh
+	@./jmeter/scripts/generate-lab2-analysis.sh
+
+# Complete Lab 2 testing workflow
+jmeter-lab2-complete: jmeter-lab2-run jmeter-lab2-analyze
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║          Lab 2 Testing Complete! 🎉                        ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "✅ All tests completed"
+	@echo "✅ Performance analysis generated"
+	@echo ""
+	@echo "📁 Results location: jmeter/results/"
+	@echo "📄 Analysis report: jmeter/results/analysis/"
+	@echo ""
+	@echo "Next steps for Lab 2 submission:"
+	@echo "  1. Review the performance analysis report"
+	@echo "  2. Take screenshots of HTML reports"
+	@echo "  3. Document key findings"
+	@echo "  4. Submit deliverables"
+	@echo ""
+
+# Show Lab 2 deliverables status
+jmeter-lab2-status:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║           Lab 2 Deliverables Status                        ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "📊 Test Results by User Load:"
+	@echo "───────────────────────────────────────────────────────────"
+	@for users in 100 200 300 400 500; do \
+		count=$$(find jmeter/results/$${users}-users/csv -name "*.csv" 2>/dev/null | wc -l | tr -d ' '); \
+		if [ "$$count" -gt 0 ]; then \
+			echo "✅ $${users} users: $$count test results"; \
+		else \
+			echo "❌ $${users} users: No results found"; \
+		fi; \
+	done
+	@echo ""
+	@echo "📈 HTML Reports:"
+	@echo "───────────────────────────────────────────────────────────"
+	@for users in 100 200 300 400 500; do \
+		count=$$(find jmeter/results/$${users}-users/html-reports -name "index.html" 2>/dev/null | wc -l | tr -d ' '); \
+		if [ "$$count" -gt 0 ]; then \
+			echo "✅ $${users} users: $$count HTML reports"; \
+		else \
+			echo "❌ $${users} users: No reports found"; \
+		fi; \
+	done
+	@echo ""
+	@echo "📄 Analysis Reports:"
+	@echo "───────────────────────────────────────────────────────────"
+	@if [ -d jmeter/results/analysis ] && [ -n "$$(ls -A jmeter/results/analysis 2>/dev/null)" ]; then \
+		echo "✅ Analysis reports:"; \
+		ls -1 jmeter/results/analysis/*.md 2>/dev/null | sed 's/^/   - /' || echo "   - None yet"; \
+	else \
+		echo "❌ No analysis reports generated"; \
+		echo "   Run: make jmeter-lab2-analyze"; \
+	fi
+	@echo ""
+	@echo "📸 Screenshots:"
+	@echo "───────────────────────────────────────────────────────────"
+	@if [ -d jmeter/results/screenshots ] && [ -n "$$(ls -A jmeter/results/screenshots 2>/dev/null)" ]; then \
+		count=$$(ls jmeter/results/screenshots 2>/dev/null | wc -l | tr -d ' '); \
+		echo "✅ Screenshots: $$count files"; \
+	else \
+		echo "⚠️  No screenshots yet"; \
+		echo "   Place screenshots in: jmeter/results/screenshots/"; \
+	fi
+	@echo ""

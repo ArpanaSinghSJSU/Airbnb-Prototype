@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../redux/slices/authSlice';
 import { propertyAPI } from '../../services/api';
@@ -7,6 +7,7 @@ import AIAgent from '../../components/shared/AIAgent';
 
 const PropertySearch = () => {
   const user = useSelector(selectUser);
+  const [searchParams] = useSearchParams();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAIAgent, setShowAIAgent] = useState(false);
@@ -18,17 +19,37 @@ const PropertySearch = () => {
   });
 
   useEffect(() => {
+    // Read URL parameters and populate filters
+    const urlLocation = searchParams.get('location');
+    const urlStartDate = searchParams.get('start_date');
+    const urlEndDate = searchParams.get('end_date');
+    const urlGuests = searchParams.get('guests');
+
+    if (urlLocation || urlStartDate || urlEndDate || urlGuests) {
+      // URL has search parameters, populate filters and search
+      const newFilters = {
+        location: urlLocation || '',
+        start_date: urlStartDate || '',
+        end_date: urlEndDate || '',
+        guests: urlGuests || '',
+      };
+      setFilters(newFilters);
+      // Search with URL parameters
+      searchPropertiesWithParams(newFilters);
+    } else {
+      // No URL parameters, just load all properties
     searchProperties();
+    }
   }, []);
 
-  const searchProperties = async () => {
+  const searchPropertiesWithParams = async (filterParams) => {
     setLoading(true);
     try {
       const params = {};
-      if (filters.location) params.location = filters.location;
-      if (filters.start_date) params.start_date = filters.start_date;
-      if (filters.end_date) params.end_date = filters.end_date;
-      if (filters.guests) params.guests = filters.guests;
+      if (filterParams.location) params.location = filterParams.location;
+      if (filterParams.start_date) params.start_date = filterParams.start_date;
+      if (filterParams.end_date) params.end_date = filterParams.end_date;
+      if (filterParams.guests) params.guests = filterParams.guests;
 
       const response = await propertyAPI.search(params);
       if (response.data.success) {
@@ -39,6 +60,10 @@ const PropertySearch = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const searchProperties = async () => {
+    searchPropertiesWithParams(filters);
   };
 
   const handleFilterChange = (e) => {

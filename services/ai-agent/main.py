@@ -89,7 +89,7 @@ async def generate_plan_from_booking_id(
                 detail=f"Booking {booking_id} not found"
             )
         
-        # Create booking context
+        # Create booking context (location will be auto-computed by model validator)
         booking_context = BookingContext(
             booking_id=booking_data['booking_id'],
             property_name=booking_data['property_name'],

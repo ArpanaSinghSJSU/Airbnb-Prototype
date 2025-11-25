@@ -133,7 +133,7 @@ const TravelerDashboard = () => {
                 <div key={booking.id} className="border border-gray-200 rounded-lg p-4 hover:border-airbnb-pink transition">
                   <div className="flex items-start space-x-4">
                     {/* Property Image */}
-                    <Link to={`/traveler/property/${booking.propertyId}`}>
+                    <Link to={`/property/${booking.propertyId}`}>
                       <div className="h-20 w-32 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
                         {(() => {
                           // Get photos from populated property object
@@ -165,7 +165,7 @@ const TravelerDashboard = () => {
                     <div className="flex-1 flex justify-between items-start">
                       <div>
                         <Link 
-                          to={`/traveler/property/${booking.propertyId}`}
+                          to={`/property/${booking.propertyId}`}
                           className="font-semibold text-airbnb-dark hover:text-airbnb-pink transition"
                         >
                           {booking.property?.name || 'Property'}

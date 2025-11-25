@@ -66,7 +66,7 @@ exports.uploadProfilePicture = async (req, res) => {
     }
 
     const userId = req.user.userId;
-    const profilePicture = `/uploads/profiles/${req.file.filename}`;
+    const profilePicture = `/uploads/traveler-profiles/${req.file.filename}`;
 
     const user = await User.findByIdAndUpdate(
       userId, 

@@ -106,7 +106,7 @@ const Favorites = () => {
                   </svg>
                 </button>
 
-                <Link to={`/traveler/property/${favorite.propertyId}`}>
+                <Link to={`/property/${favorite.propertyId}`}>
                   <div className="relative h-64 bg-gray-200 rounded-t-xl overflow-hidden">
                     {(() => {
                       // Parse photos if it's a string, or use as is if already an array
@@ -135,7 +135,7 @@ const Favorites = () => {
                     })()}
                     <div className="absolute bottom-3 right-3 bg-white px-3 py-1 rounded-full shadow">
                       <span className="text-sm font-semibold text-airbnb-dark">
-                        ${favorite.price_per_night}/night
+                        ${favorite.pricePerNight}/night
                       </span>
                     </div>
                   </div>
